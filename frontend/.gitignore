@@ -37,3 +37,8 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

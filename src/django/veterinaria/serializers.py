@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group  # ← agregar Group
 from .models import (
     Veterinaria,
     PerfilUsuario,
@@ -74,17 +75,23 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        telefono = validated_data.pop("telefono", None)
-        direccion = validated_data.pop("direccion", None)
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
+        telefono = validated_data.pop("telefono", "")
+        direccion = validated_data.pop("direccion", "")
+
+        # create_user ya maneja el hash del password internamente
+        user = User.objects.create_user(**validated_data)
+
+        # Asignar al grupo clientes automáticamente
+        grupo_clientes, _ = Group.objects.get_or_create(name="clientes")
+        user.groups.add(grupo_clientes)
+
+        # Crear el perfil del cliente
+        from .models import PerfilUsuario
+
         PerfilUsuario.objects.create(
-            usuario=user,
-            telefono=telefono,
-            direccion=direccion,
+            usuario=user, telefono=telefono, direccion=direccion
         )
+
         return user
 
 
