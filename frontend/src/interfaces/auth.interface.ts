@@ -6,4 +6,5 @@ export interface LoginCredentials {
 export interface TokenResponse {
   access: string
   refresh: string
+  grupo: string // ← nuevo
 }
