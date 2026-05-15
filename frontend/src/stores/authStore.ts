@@ -45,8 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const tokens: RespuestaToken = await authService.login(credentials);
 
-      tokenAcceso.value = tokens.acceso;
-      tokenRefresco.value = tokens.refresco;
+      tokenAcceso.value = tokens.access;
+      tokenRefresco.value = tokens.refresh;
 
       // Como el tipo RespuestaToken no tiene `grupo`, lo tomamos del backend
       // con un cast explícito, para no romper el tipado global.
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
   const refrescarToken = async (): Promise<void> => {
     if (!tokenRefresco.value) throw new Error('No refresh token');
     const tokens = await authService.refreshToken(tokenRefresco.value);
-    tokenAcceso.value = tokens.acceso;
+    tokenAcceso.value = tokens.access;
   };
 
   const cerrarSesion = () => {

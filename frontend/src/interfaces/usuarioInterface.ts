@@ -15,8 +15,8 @@ export interface FormularioInicioSesion {
 }
 
 export interface RespuestaToken {
-  acceso: string
-  refresco: string
+  access: string
+  refresh: string
 }
 
 export type Usuario = UsuarioAuth
