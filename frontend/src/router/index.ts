@@ -7,13 +7,13 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('@/views/auth/LoginView.vue'),
-    meta: { guest: true },
+    meta: { invitado: true },
   },
 
   {
     path: '/admin',
     component: () => import('@/layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, roles: ['administradores', 'veterinarios'] },
+    meta: { requiereAuth: true, roles: ['administradores', 'veterinarios'] },
     children: [
       { path: '', redirect: { name: 'Dashboard' } },
       {
@@ -87,7 +87,7 @@ const routes = [
   {
     path: '/cliente',
     component: () => import('@/layouts/ClienteLayout.vue'),
-    meta: { requiresAuth: true, roles: ['clientes'] },
+    meta: { requiereAuth: true, roles: ['clientes'] },
     children: [
       { path: '', redirect: { name: 'ClienteInicio' } },
       {
@@ -157,7 +157,7 @@ router.beforeEach((to) => {
     return redireccionRol
   }
 
-  if (to.meta.requiresAuth && !auth.estaAutenticado) {
+  if (to.meta.requiereAuth && !auth.estaAutenticado) {
     if (to.path !== '/login') {
       return '/login'
     }

@@ -153,7 +153,7 @@ const modoEdicion = ref(false)
 const guardando = ref(false)
 const duenoEditando = ref<UsuarioAuth | null>(null)
 
-const formVacio = (): RegistroClienteForm => ({
+const formularioVacio = (): RegistroClienteForm => ({
   username: '',
   password: '',
   first_name: '',
@@ -163,7 +163,7 @@ const formVacio = (): RegistroClienteForm => ({
   direccion: '',
 })
 
-const form = ref<RegistroClienteForm>(formVacio())
+const form = ref<RegistroClienteForm>(formularioVacio())
 
 onMounted(async () => {
   await Promise.all([
@@ -208,15 +208,15 @@ function iniciales(nombre: string, apellido: string) {
   return `${nombre?.[0] ?? ''}${apellido?.[0] ?? ''}`.toUpperCase()
 }
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalDueno')!)
 }
 
 function abrirModalNuevo() {
   modoEdicion.value = false
   duenoEditando.value = null
-  form.value = formVacio()
-  getModal().show()
+  form.value = formularioVacio()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(u: UsuarioAuth) {
@@ -231,7 +231,7 @@ function abrirModalEditar(u: UsuarioAuth) {
     telefono: obtenerTelefono(u.id),
     direccion: obtenerDireccion(u.id),
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 async function guardar() {
@@ -272,7 +272,7 @@ async function guardar() {
         showConfirmButton: false,
       })
     } else {
-      await usuarioStore.registrarCliente(form.value)
+      await perfilClienteStore.crear(form.value)
 
       await Promise.all([
         usuarioStore.obtenerTodos(),
@@ -287,7 +287,7 @@ async function guardar() {
       })
     }
 
-    getModal().hide()
+    obtenerModal().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar el dueño.', 'error')
   } finally {

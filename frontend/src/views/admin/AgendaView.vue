@@ -62,9 +62,9 @@
           </thead>
           <tbody>
             <tr v-for="turno in turnosFiltrados" :key="turno.id">
-              <td class="small text-muted">{{ formatFecha(turno.fecha_hora) }}</td>
-              <td class="fw-bold">{{ formatHora(turno.fecha_hora) }}</td>
-              <td class="fw-bold text-success">{{ formatHora(turno.hora_fin) }}</td>
+              <td class="small text-muted">{{ formatearFecha(turno.fecha_hora) }}</td>
+              <td class="fw-bold">{{ formatearHora(turno.fecha_hora) }}</td>
+              <td class="fw-bold text-success">{{ formatearHora(turno.hora_fin) }}</td>
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success-subtle text-success-emphasis rounded-circle" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px;">
@@ -77,7 +77,7 @@
               <td>{{ turno.servicio_nombre }}</td>
               <td>{{ turno.veterinario_nombre }}</td>
               <td>
-                <span class="badge" :class="badgeEstado(turno.estado)">
+                <span class="badge" :class="insigniaEstado(turno.estado)">
                   {{ turno.estado_display }}
                 </span>
               </td>
@@ -223,7 +223,7 @@ const modoEdicion = ref(false)
 const turnoEditando = ref<Turno | null>(null)
 const guardando = ref(false)
 
-const formVacio: TurnoForm = {
+const formularioVacio: TurnoForm = {
   fecha_hora: '',
   mascota: 0,
   veterinario: 0,
@@ -233,7 +233,7 @@ const formVacio: TurnoForm = {
   urgencia: false,
 }
 
-const form = ref<TurnoForm>({ ...formVacio })
+const form = ref<TurnoForm>({ ...formularioVacio })
 
 const opcionesEstado = [
   { value: '', label: 'Todos' },
@@ -304,14 +304,14 @@ function irHoy() {
   fechaSeleccionada.value = obtenerFechaLocal()
 }
 
-function formatFecha(fecha_hora: string) {
+function formatearFecha(fecha_hora: string) {
   return new Date(fecha_hora).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
   })
 }
 
-function formatHora(fecha_hora: string | null | undefined) {
+function formatearHora(fecha_hora: string | null | undefined) {
   if (!fecha_hora) return '-'
   return new Date(fecha_hora).toLocaleTimeString('es-AR', {
     hour: '2-digit',
@@ -319,7 +319,7 @@ function formatHora(fecha_hora: string | null | undefined) {
   })
 }
 
-function badgeEstado(estado: EstadoTurno) {
+function insigniaEstado(estado: EstadoTurno) {
   const map: Record<EstadoTurno, string> = {
     reservado: 'bg-primary',
     confirmado: 'bg-success',
@@ -335,16 +335,16 @@ function nombreCompletoVet(vet: VeterinarioPerfil): string {
   return `${vet.usuario.first_name} ${vet.usuario.last_name}`
 }
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalTurno')!)
 }
 
 function abrirModalNuevo() {
   modoEdicion.value = false
   turnoEditando.value = null
-  form.value = { ...formVacio }
+  form.value = { ...formularioVacio }
   form.value.fecha_hora = `${fechaSeleccionada.value}T09:00`
-  getModal().show()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(turno: Turno) {
@@ -359,7 +359,7 @@ function abrirModalEditar(turno: Turno) {
     motivo_consulta: turno.motivo_consulta ?? '',
     urgencia: false,
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 async function guardar() {
@@ -390,7 +390,7 @@ async function guardar() {
     }
     
     await turnoStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
     
     Swal.fire({
       icon: 'success',
@@ -430,7 +430,7 @@ async function guardar() {
 async function confirmarEliminar(turno: Turno) {
   const result = await Swal.fire({
     title: 'Eliminar turno?',
-    text: `${turno.mascota_nombre} — ${formatHora(turno.fecha_hora)}`,
+    text: `${turno.mascota_nombre} — ${formatearHora(turno.fecha_hora)}`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc3545',

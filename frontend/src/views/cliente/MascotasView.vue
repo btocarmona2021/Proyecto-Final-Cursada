@@ -65,7 +65,7 @@
               style="width: 52px; height: 52px; background: #e7f5ff"
             >
               <span style="font-size: 1.7rem">
-                {{ avatarEmoji(m.especie_nombre) }}
+                {{ emojiAvatar(m.especie_nombre) }}
               </span>
             </div>
             <div class="flex-grow-1">
@@ -140,7 +140,7 @@ function irDetalle(id: number) {
   router.push({ name: 'ClienteMascotaDetalle', params: { id } })
 }
 
-function avatarEmoji(especieNombre: string | null | undefined) {
+function emojiAvatar(especieNombre: string | null | undefined) {
   const lower = especieNombre?.toLowerCase() ?? ''
   if (lower.includes('perro')) return '🐶'
   if (lower.includes('gato')) return '🐱'

@@ -48,7 +48,7 @@
               Estado:
               <span
                 class="badge"
-                :class="badgeInternacion(internacion.estado)"
+                :class="insigniaInternacion(internacion.estado)"
                 style="font-size: 11px"
               >
                 {{ internacion.estado_display }}
@@ -71,14 +71,14 @@
               <ul class="list-unstyled mb-0" style="font-size: 13px">
                 <li class="d-flex justify-content-between mb-1">
                   <span>Ingreso</span>
-                  <strong>{{ formatFecha(internacion.fecha_ingreso) }}</strong>
+                  <strong>{{ formatearFecha(internacion.fecha_ingreso) }}</strong>
                 </li>
                 <li class="d-flex justify-content-between mb-1">
                   <span>Egreso</span>
                   <strong>
                     {{
                       internacion.fecha_egreso
-                        ? formatFecha(internacion.fecha_egreso)
+                        ? formatearFecha(internacion.fecha_egreso)
                         : 'Aún internado'
                     }}
                   </strong>
@@ -166,7 +166,7 @@ const cargando = ref(false)
  * Si viene un id por ruta, lo usamos.
  * Si no, o si no existe, mostraremos la internación activa más reciente.
  */
-const internacionId = computed(() => Number(route.params.id || 0))
+const idInternacion = computed(() => Number(route.params.id || 0))
 
 onMounted(async () => {
   cargando.value = true
@@ -189,8 +189,8 @@ const internacion = computed<Internacion | undefined>(() => {
   const data = internaciones.value
 
   // 1) Buscar por ID de ruta
-  if (internacionId.value) {
-    const byId = data.find((i) => i.id === internacionId.value)
+  if (idInternacion.value) {
+    const byId = data.find((i) => i.id === idInternacion.value)
     if (byId) return byId
   }
 
@@ -213,7 +213,7 @@ const internacion = computed<Internacion | undefined>(() => {
     )[0]
 })
 
-function formatFecha(iso: string | null | undefined) {
+function formatearFecha(iso: string | null | undefined) {
   if (!iso) return '—'
   const d = new Date(iso)
   return d.toLocaleDateString('es-AR', {
@@ -223,7 +223,7 @@ function formatFecha(iso: string | null | undefined) {
   })
 }
 
-function badgeInternacion(estado: string) {
+function insigniaInternacion(estado: string) {
   switch (estado) {
     case 'internado':
       return 'bg-danger'

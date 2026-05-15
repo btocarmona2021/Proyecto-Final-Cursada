@@ -97,19 +97,19 @@
                   style="min-width: 52px; border-right: 1px solid #eee"
                 >
                   <div class="fw-bold" style="font-size: 16px">
-                    {{ formatDia(t.fecha_hora) }}
+                    {{ formatearDia(t.fecha_hora) }}
                   </div>
                   <div
                     class="text-uppercase text-muted"
                     style="font-size: 10px"
                   >
-                    {{ formatMes(t.fecha_hora) }}
+                    {{ formatearMes(t.fecha_hora) }}
                   </div>
                   <span
                     class="badge bg-light text-muted mt-1"
                     style="font-size: 10px"
                   >
-                    {{ formatHora(t.fecha_hora) }}
+                    {{ formatearHora(t.fecha_hora) }}
                   </span>
                 </div>
                 <div>
@@ -135,7 +135,7 @@
               <div class="text-end">
                 <span
                   class="badge"
-                  :class="badgeEstado(t.estado)"
+                  :class="insigniaEstado(t.estado)"
                   style="font-size: 11px"
                 >
                   {{ t.estado_display }}
@@ -227,7 +227,7 @@ function esFuturo(t: Turno): boolean {
   return new Date(t.fecha_hora) >= new Date()
 }
 
-function badgeEstado(estado: string) {
+function insigniaEstado(estado: string) {
   switch (estado) {
     case 'confirmado':
       return 'bg-success'
@@ -246,7 +246,7 @@ function badgeEstado(estado: string) {
   }
 }
 
-function formatHora(iso: string | null | undefined) {
+function formatearHora(iso: string | null | undefined) {
   if (!iso) return '--:--'
   return new Date(iso).toLocaleTimeString('es-AR', {
     hour: '2-digit',
@@ -254,14 +254,14 @@ function formatHora(iso: string | null | undefined) {
   })
 }
 
-function formatDia(iso: string | null | undefined) {
+function formatearDia(iso: string | null | undefined) {
   if (!iso) return '--'
   return new Date(iso).toLocaleDateString('es-AR', {
     day: '2-digit',
   })
 }
 
-function formatMes(iso: string | null | undefined) {
+function formatearMes(iso: string | null | undefined) {
   if (!iso) return '--'
   return new Date(iso).toLocaleDateString('es-AR', {
     month: 'short',

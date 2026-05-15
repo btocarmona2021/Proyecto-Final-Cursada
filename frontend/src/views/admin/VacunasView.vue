@@ -55,11 +55,11 @@
               <td class="fw-semibold">{{ v.nombre }}</td>
               <td>{{ obtenerMascotaNombre(v.mascota) }}</td>
               <td class="small text-muted">{{ obtenerDuenoNombre(v.mascota) }}</td>
-              <td class="small">{{ formatFecha(v.fecha_aplicacion) }}</td>
-              <td class="small">{{ v.fecha_proxima ? formatFecha(v.fecha_proxima) : '—' }}</td>
+              <td class="small">{{ formatearFecha(v.fecha_aplicacion) }}</td>
+              <td class="small">{{ v.fecha_proxima ? formatearFecha(v.fecha_proxima) : '—' }}</td>
               <td>
                 <span class="badge" :class="estadoVacuna(v.fecha_proxima)">
-                  {{ labelVacuna(v.fecha_proxima) }}
+                  {{ etiquetaVacuna(v.fecha_proxima) }}
                 </span>
               </td>
               <td>
@@ -144,16 +144,16 @@
               <strong>Dueño:</strong> {{ obtenerDuenoNombre(vacunaDetalle.mascota) }}
             </div>
             <div class="mb-3">
-              <strong>Fecha de aplicación:</strong> {{ formatFecha(vacunaDetalle.fecha_aplicacion) }}
+              <strong>Fecha de aplicación:</strong> {{ formatearFecha(vacunaDetalle.fecha_aplicacion) }}
             </div>
             <div class="mb-3">
               <strong>Próxima dosis:</strong> 
-              {{ vacunaDetalle.fecha_proxima ? formatFecha(vacunaDetalle.fecha_proxima) : 'No programada' }}
+              {{ vacunaDetalle.fecha_proxima ? formatearFecha(vacunaDetalle.fecha_proxima) : 'No programada' }}
             </div>
             <div class="mb-3">
               <strong>Estado:</strong>
               <span class="badge ms-2" :class="estadoVacuna(vacunaDetalle.fecha_proxima)">
-                {{ labelVacuna(vacunaDetalle.fecha_proxima) }}
+                {{ etiquetaVacuna(vacunaDetalle.fecha_proxima) }}
               </span>
             </div>
             <div v-if="vacunaDetalle.observaciones" class="mb-3">
@@ -189,7 +189,7 @@ const modoEdicion = ref(false)
 const vacunaEditando = ref<Vacuna | null>(null)
 const vacunaDetalle = ref<Vacuna | null>(null)
 
-const formVacio = () => ({
+const formularioVacio = () => ({
   mascota: 0,
   nombre: '',
   fecha_aplicacion: new Date().toISOString().slice(0, 10),
@@ -197,7 +197,7 @@ const formVacio = () => ({
   observaciones: '',
 })
 
-const form = ref(formVacio())
+const form = ref(formularioVacio())
 
 onMounted(async () => {
   await Promise.all([
@@ -239,7 +239,7 @@ function estadoVacuna(fechaProxima: string | null) {
   return 'bg-success'
 }
 
-function labelVacuna(fechaProxima: string | null) {
+function etiquetaVacuna(fechaProxima: string | null) {
   if (!fechaProxima) return 'Sin próxima'
   const dias = Math.ceil((new Date(fechaProxima).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
   if (dias < 0) return 'Vencida'
@@ -247,7 +247,7 @@ function labelVacuna(fechaProxima: string | null) {
   return 'Al día'
 }
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
@@ -263,19 +263,19 @@ function obtenerDuenoNombre(mascotaId: number) {
   return mascotaStore.mascotas.find((m) => m.id === mascotaId)?.usuario_nombre ?? '—'
 }
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalVacuna')!)
 }
 
-function getModalDetalle() {
+function obtenerModalDetalle() {
   return Modal.getOrCreateInstance(document.getElementById('modalDetalle')!)
 }
 
 function abrirModalNueva() {
   modoEdicion.value = false
   vacunaEditando.value = null
-  form.value = formVacio()
-  getModal().show()
+  form.value = formularioVacio()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(v: Vacuna) {
@@ -288,12 +288,12 @@ function abrirModalEditar(v: Vacuna) {
     fecha_proxima: v.fecha_proxima ?? '',
     observaciones: v.observaciones ?? '',
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 function verDetalle(v: Vacuna) {
   vacunaDetalle.value = v
-  getModalDetalle().show()
+  obtenerModalDetalle().show()
 }
 
 async function guardar() {
@@ -312,7 +312,7 @@ async function guardar() {
       Swal.fire({ icon: 'success', title: 'Vacuna registrada', timer: 1500, showConfirmButton: false })
     }
     await vacunaStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar la vacuna.', 'error')
   } finally {

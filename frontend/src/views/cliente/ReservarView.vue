@@ -75,7 +75,7 @@
                 style="width: 44px; height: 44px; background: #e7f5ff"
               >
                 <span style="font-size: 1.4rem">
-                  {{ avatarEmoji(m.especie_nombre) }}
+                  {{ emojiAvatar(m.especie_nombre) }}
                 </span>
               </div>
               <div class="flex-grow-1">
@@ -179,7 +179,7 @@
               v-model="fechaSeleccionada"
               type="date"
               class="form-control form-control-sm"
-              :min="hoyInput"
+              :min="entradaHoy"
             />
           </div>
           <div class="col-12 col-sm-6">
@@ -290,14 +290,14 @@ const form = ref<{
 })
 
 const hoy = new Date()
-const hoyInput = computed(() => {
+const entradaHoy = computed(() => {
   const y = hoy.getFullYear()
   const m = String(hoy.getMonth() + 1).padStart(2, '0')
   const d = String(hoy.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 })
 
-const fechaSeleccionada = ref<string>(hoyInput.value)
+const fechaSeleccionada = ref<string>(entradaHoy.value)
 const horaSeleccionada = ref<string>('09:00')
 
 onMounted(async () => {
@@ -382,7 +382,7 @@ const resumenFechaHora = computed(() => {
   })
 })
 
-function buildFechaHoraISO(): string | null {
+function construirFechaHoraISO(): string | null {
   if (!fechaSeleccionada.value || !horaSeleccionada.value) return null
   return `${fechaSeleccionada.value}T${horaSeleccionada.value}:00`
 }
@@ -390,10 +390,10 @@ function buildFechaHoraISO(): string | null {
 async function confirmarTurno() {
   if (!puedeConfirmar.value) return
 
-  const fechaHoraIso = buildFechaHoraISO()
+  const fechaHoraIso = construirFechaHoraISO()
   if (!fechaHoraIso) return
 
-  const payload: TurnoForm = {
+  const datos: TurnoForm = {
     fecha_hora: fechaHoraIso,
     mascota: form.value.mascota,
     veterinario: form.value.veterinario,
@@ -406,7 +406,7 @@ async function confirmarTurno() {
 
   try {
     guardando.value = true
-    await turnoStore.crear(payload)
+    await turnoStore.crear(datos)
     await turnoStore.obtenerTodos()
     router.push({ name: 'ClienteTurnos' })
   } finally {
@@ -414,7 +414,7 @@ async function confirmarTurno() {
   }
 }
 
-function avatarEmoji(especieNombre: string | null | undefined) {
+function emojiAvatar(especieNombre: string | null | undefined) {
   const lower = especieNombre?.toLowerCase() ?? ''
   if (lower.includes('perro')) return '🐶'
   if (lower.includes('gato')) return '🐱'

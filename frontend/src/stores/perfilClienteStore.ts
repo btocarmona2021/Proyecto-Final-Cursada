@@ -5,6 +5,7 @@ import perfilClienteService from '@/services/perfilClienteService'
 import type {
   PerfilUsuario,
   PerfilUsuarioForm,
+  RegistroClienteForm,
 } from '@/interfaces/perfilUsuarioInterface'
 
 export const usePerfilClienteStore = defineStore('perfilCliente', () => {
@@ -37,7 +38,7 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
     }
   }
 
-  const crear = async (data: PerfilUsuarioForm) => {
+  const crear = async (data: RegistroClienteForm) => {
     cargando.value = true
     error.value = null
     try {

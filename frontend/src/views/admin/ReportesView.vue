@@ -41,7 +41,7 @@
         <div class="card border-0 shadow-sm text-center">
           <div class="card-body">
             <div class="text-muted small mb-1">Total turnos</div>
-            <div class="fs-3 fw-bold text-primary">{{ stats.totalTurnos }}</div>
+            <div class="fs-3 fw-bold text-primary">{{ estadisticas.totalTurnos }}</div>
           </div>
         </div>
       </div>
@@ -49,7 +49,7 @@
         <div class="card border-0 shadow-sm text-center">
           <div class="card-body">
             <div class="text-muted small mb-1">Pacientes atendidos</div>
-            <div class="fs-3 fw-bold text-success">{{ stats.pacientesAtendidos }}</div>
+            <div class="fs-3 fw-bold text-success">{{ estadisticas.pacientesAtendidos }}</div>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
         <div class="card border-0 shadow-sm text-center">
           <div class="card-body">
             <div class="text-muted small mb-1">Consultas realizadas</div>
-            <div class="fs-3 fw-bold text-info">{{ stats.totalConsultas }}</div>
+            <div class="fs-3 fw-bold text-info">{{ estadisticas.totalConsultas }}</div>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@
         <div class="card border-0 shadow-sm text-center">
           <div class="card-body">
             <div class="text-muted small mb-1">Tasa ocupación</div>
-            <div class="fs-3 fw-bold text-warning">{{ stats.tasaOcupacion }}%</div>
+            <div class="fs-3 fw-bold text-warning">{{ estadisticas.tasaOcupacion }}%</div>
           </div>
         </div>
       </div>
@@ -152,13 +152,13 @@
           </thead>
           <tbody>
             <tr v-for="t in turnos.slice(0, 20)" :key="t.id">
-              <td class="small">{{ formatFecha(t.fecha_hora) }}</td>
+              <td class="small">{{ formatearFecha(t.fecha_hora) }}</td>
               <td class="fw-semibold small">{{ t.mascota_nombre }}</td>
               <td class="small">{{ t.dueno_nombre }}</td>
               <td class="small">{{ t.veterinario_nombre }}</td>
               <td class="small">{{ t.servicio_nombre }}</td>
               <td>
-                <span class="badge" :class="badgeEstado(t.estado)">
+                <span class="badge" :class="insigniaEstado(t.estado)">
                   {{ t.estado_display }}
                 </span>
               </td>
@@ -189,7 +189,7 @@ const filtros = ref({
   veterinario: '',
 })
 
-const stats = ref({
+const estadisticas = ref({
   totalTurnos: 0,
   pacientesAtendidos: 0,
   totalConsultas: 0,
@@ -391,17 +391,17 @@ function cargarReportes() {
   cargando.value = true
   
   const turnosFiltrados = turnos.value
-  stats.value.totalTurnos = turnosFiltrados.length
+  estadisticas.value.totalTurnos = turnosFiltrados.length
   
   const mascotasUnicas = new Set(turnosFiltrados.map(t => t.mascota_id))
-  stats.value.pacientesAtendidos = mascotasUnicas.size
+  estadisticas.value.pacientesAtendidos = mascotasUnicas.size
   
-  stats.value.totalConsultas = turnosFiltrados.filter(t => 
+  estadisticas.value.totalConsultas = turnosFiltrados.filter(t => 
     t.estado === 'atendido' || t.estado === 'en_consulta'
   ).length
   
-  stats.value.tasaOcupacion = turnosFiltrados.length > 0
-    ? Math.round((stats.value.totalConsultas / turnosFiltrados.length) * 100)
+  estadisticas.value.tasaOcupacion = turnosFiltrados.length > 0
+    ? Math.round((estadisticas.value.totalConsultas / turnosFiltrados.length) * 100)
     : 0
 
   setTimeout(() => {
@@ -409,7 +409,7 @@ function cargarReportes() {
   }, 500)
 }
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
@@ -419,7 +419,7 @@ function formatFecha(fecha: string) {
   })
 }
 
-function badgeEstado(estado: EstadoTurno) {
+function insigniaEstado(estado: EstadoTurno) {
   const map: Record<EstadoTurno, string> = {
     reservado: 'bg-primary',
     confirmado: 'bg-success',

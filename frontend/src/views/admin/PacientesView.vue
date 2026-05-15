@@ -178,7 +178,7 @@ const mascotaEditando = ref<Mascota | null>(null)
 const guardando = ref(false)
 const especieSeleccionada = ref<number>(0)
 
-const formVacio = (): MascotaForm => ({
+const formularioVacio = (): MascotaForm => ({
   nombre: '',
   raza: 0,
   usuario: 0,
@@ -190,7 +190,7 @@ const formVacio = (): MascotaForm => ({
   foto: null,
 })
 
-const form = ref<MascotaForm>(formVacio())
+const form = ref<MascotaForm>(formularioVacio())
 
 onMounted(async () => {
   await Promise.all([
@@ -203,7 +203,7 @@ onMounted(async () => {
 
 const soloClientes = computed(() =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  usuarioStore.usuarios.filter((u :any) => u.grupo === 'clientes')
+  usuarioStore.usuarios.filter((u: UsuarioAuth) => u.grupo === 'clientes')
 )
 
 const razasFiltradas = computed(() => {
@@ -224,7 +224,7 @@ function cambiarEspecie() {
   form.value.raza = 0
 }
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalMascota')!)
 }
 
@@ -232,8 +232,8 @@ function abrirModalNuevo() {
   modoEdicion.value = false
   mascotaEditando.value = null
   especieSeleccionada.value = 0
-  form.value = formVacio()
-  getModal().show()
+  form.value = formularioVacio()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(m: Mascota) {
@@ -256,7 +256,7 @@ function abrirModalEditar(m: Mascota) {
     microchip: m.microchip ?? '',
     foto: null,
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 async function guardar() {
@@ -274,7 +274,7 @@ async function guardar() {
       Swal.fire({ icon: 'success', title: 'Paciente creado', timer: 1500, showConfirmButton: false })
     }
     await mascotaStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar el paciente.', 'error')
   } finally {

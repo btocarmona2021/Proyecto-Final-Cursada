@@ -39,7 +39,7 @@
             style="width: 64px; height: 64px; background: #e7f5ff"
           >
             <span style="font-size: 2rem">
-              {{ avatarEmoji(mascota.especie_nombre) }}
+              {{ emojiAvatar(mascota.especie_nombre) }}
             </span>
           </div>
           <div class="flex-grow-1">
@@ -114,7 +114,7 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
                       <div class="fw-semibold">
-                        {{ formatFechaHora(t.fecha_hora) }}
+                        {{ formatearFechaHora(t.fecha_hora) }}
                       </div>
                       <div class="text-muted">
                         {{ t.servicio_nombre }}
@@ -125,7 +125,7 @@
                     </div>
                     <span
                       class="badge"
-                      :class="badgeEstado(t.estado)"
+                      :class="insigniaEstado(t.estado)"
                       style="font-size: 11px"
                     >
                       {{ t.estado_display }}
@@ -176,7 +176,7 @@ const turnoStore = useTurnoStore()
 
 const cargando = ref(false)
 
-const mascotaId = computed(() => Number(route.params.id || 0))
+const idMascota = computed(() => Number(route.params.id || 0))
 
 onMounted(async () => {
   cargando.value = true
@@ -193,19 +193,19 @@ onMounted(async () => {
 const mascotas = computed<Mascota[]>(() => mascotaStore.mascotas)
 
 const mascota = computed<Mascota | undefined>(() =>
-  mascotas.value.find((m) => m.id === mascotaId.value),
+  mascotas.value.find((m) => m.id === idMascota.value),
 )
 
 const turnosMascota = computed<Turno[]>(() =>
   turnoStore.turnos
-    .filter((t) => t.mascota_id === mascotaId.value)
+    .filter((t) => t.mascota_id === idMascota.value)
     .sort((a, b) => {
       if (!a.fecha_hora || !b.fecha_hora) return 0
       return new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime()
     }),
 )
 
-function avatarEmoji(especieNombre: string | null | undefined) {
+function emojiAvatar(especieNombre: string | null | undefined) {
   const lower = especieNombre?.toLowerCase() ?? ''
   if (lower.includes('perro')) return '🐶'
   if (lower.includes('gato')) return '🐱'
@@ -214,7 +214,7 @@ function avatarEmoji(especieNombre: string | null | undefined) {
   return '🐾'
 }
 
-function formatFechaHora(iso: string | null | undefined) {
+function formatearFechaHora(iso: string | null | undefined) {
   if (!iso) return '—'
   const d = new Date(iso)
   return d.toLocaleString('es-AR', {
@@ -225,7 +225,7 @@ function formatFechaHora(iso: string | null | undefined) {
   })
 }
 
-function badgeEstado(estado: string) {
+function insigniaEstado(estado: string) {
   switch (estado) {
     case 'confirmado':
       return 'bg-success'

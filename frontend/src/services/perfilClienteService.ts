@@ -2,6 +2,7 @@ import api from '@/api/api'
 import type {
   PerfilUsuario,
   PerfilUsuarioForm,
+  RegistroClienteForm,
 } from '@/interfaces/perfilUsuarioInterface'
 
 const perfilClienteService = {
@@ -15,7 +16,7 @@ const perfilClienteService = {
     return response.data
   },
 
-  async crear(data: PerfilUsuarioForm): Promise<PerfilUsuario> {
+  async crear(data: RegistroClienteForm): Promise<PerfilUsuario> {
     const response = await api.post<PerfilUsuario>('/clientes/', data)
     return response.data
   },

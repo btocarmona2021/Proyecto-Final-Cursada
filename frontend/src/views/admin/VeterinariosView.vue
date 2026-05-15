@@ -265,7 +265,7 @@ const veterinarioDetalle = ref<VeterinarioPerfil | null>(null)
 const horarioEditando = ref<HorarioVeterinario | null>(null)
 const usuarioSeleccionadoId = ref<number>(0)
 
-const formVacio = (): VeterinarioPerfilForm => ({
+const formularioVacio = (): VeterinarioPerfilForm => ({
   matricula: '',
   especialidad: '',
   biografia: '',
@@ -273,15 +273,15 @@ const formVacio = (): VeterinarioPerfilForm => ({
   foto: null,
 })
 
-const formHorarioVacio = (): HorarioVeterinarioForm => ({
+const formularioHorarioVacio = (): HorarioVeterinarioForm => ({
   veterinario_id: 0,
   dia_semana: 1,
   hora_inicio: '',
   hora_fin: '',
 })
 
-const form = ref<VeterinarioPerfilForm>(formVacio())
-const formHorario = ref<HorarioVeterinarioForm>(formHorarioVacio())
+const form = ref<VeterinarioPerfilForm>(formularioVacio())
+const formHorario = ref<HorarioVeterinarioForm>(formularioHorarioVacio())
 
 onMounted(async () => {
   await Promise.all([
@@ -312,8 +312,8 @@ const usuariosVeterinariosDisponibles = computed(() => {
   return usuarioStore.usuarios.filter((u: UsuarioAuth) => u.grupo === 'veterinarios' && !usados.has(u.id))
 })
 
-function inicialesVet(firstName: string, lastName: string) {
-  return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase()
+function inicialesVet(primer_nombre: string, apellido: string) {
+  return `${primer_nombre?.[0] ?? ''}${apellido?.[0] ?? ''}`.toUpperCase()
 }
 
 function horariosDeVeterinario(veterinarioId: number) {
@@ -324,15 +324,15 @@ function horariosOrdenados(veterinarioId: number) {
   return [...horariosDeVeterinario(veterinarioId)].sort((a, b) => a.dia_semana - b.dia_semana)
 }
 
-function getModalVeterinario() {
+function obtenerModalVeterinario() {
   return Modal.getOrCreateInstance(document.getElementById('modalVeterinario')!)
 }
 
-function getModalDetalle() {
+function obtenerModalDetalle() {
   return Modal.getOrCreateInstance(document.getElementById('modalDetalleVeterinario')!)
 }
 
-function getModalHorario() {
+function obtenerModalHorario() {
   return Modal.getOrCreateInstance(document.getElementById('modalHorario')!)
 }
 
@@ -340,8 +340,8 @@ function abrirModalNuevo() {
   modoEdicion.value = false
   veterinarioEditando.value = null
   usuarioSeleccionadoId.value = 0
-  form.value = formVacio()
-  getModalVeterinario().show()
+  form.value = formularioVacio()
+  obtenerModalVeterinario().show()
 }
 
 function abrirModalEditar(vet: VeterinarioPerfil) {
@@ -354,12 +354,12 @@ function abrirModalEditar(vet: VeterinarioPerfil) {
     disponible: vet.disponible,
     foto: null,
   }
-  getModalVeterinario().show()
+  obtenerModalVeterinario().show()
 }
 
 function verDetalle(vet: VeterinarioPerfil) {
   veterinarioDetalle.value = vet
-  getModalDetalle().show()
+  obtenerModalDetalle().show()
 }
 
 function abrirModalHorario(vet: VeterinarioPerfil) {
@@ -371,7 +371,7 @@ function abrirModalHorario(vet: VeterinarioPerfil) {
     hora_inicio: '',
     hora_fin: '',
   }
-  getModalHorario().show()
+  obtenerModalHorario().show()
 }
 
 function editarHorario(horario: HorarioVeterinario) {
@@ -383,7 +383,7 @@ function editarHorario(horario: HorarioVeterinario) {
     hora_inicio: horario.hora_inicio,
     hora_fin: horario.hora_fin,
   }
-  getModalHorario().show()
+  obtenerModalHorario().show()
 }
 
 async function guardarVeterinario() {
@@ -409,9 +409,9 @@ async function guardarVeterinario() {
       const payload: VeterinarioPerfilForm = {
         username: usuario.username,
         password: 'temporal123',
-        firstName: usuario.first_name,
-        lastName: usuario.last_name,
-        email: usuario.email,
+        primer_nombre: usuario.first_name,
+        apellido: usuario.last_name,
+        correo: usuario.email,
         ...form.value,
       }
 
@@ -420,7 +420,7 @@ async function guardarVeterinario() {
     }
 
     await veterinarioStore.obtenerTodos()
-    getModalVeterinario().hide()
+    obtenerModalVeterinario().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar el veterinario.', 'error')
   } finally {
@@ -445,7 +445,7 @@ async function guardarHorario() {
     }
 
     await horarioStore.obtenerTodos()
-    getModalHorario().hide()
+    obtenerModalHorario().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar el horario.', 'error')
   } finally {

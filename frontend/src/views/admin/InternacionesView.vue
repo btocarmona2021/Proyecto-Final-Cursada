@@ -41,11 +41,11 @@
             <tr v-for="i in internacionesFiltradas" :key="i.id">
               <td class="fw-semibold">{{ i.mascota_nombre }}</td>
               <td class="small">{{ i.veterinario_nombre }}</td>
-              <td class="small">{{ formatFecha(i.fecha_ingreso) }}</td>
-              <td class="small">{{ i.fecha_egreso ? formatFecha(i.fecha_egreso) : '—' }}</td>
+              <td class="small">{{ formatearFecha(i.fecha_ingreso) }}</td>
+              <td class="small">{{ i.fecha_egreso ? formatearFecha(i.fecha_egreso) : '—' }}</td>
               <td class="small">{{ i.motivo }}</td>
               <td>
-                <span class="badge" :class="badgeEstado(i.estado)">
+                <span class="badge" :class="insigniaEstado(i.estado)">
                   {{ i.estado_display }}
                 </span>
               </td>
@@ -155,7 +155,7 @@
               <div v-for="e in evolucionesActuales" :key="e.id" class="card mb-2">
                 <div class="card-body">
                   <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-semibold small">{{ formatFecha(e.fecha) }}</span>
+                    <span class="fw-semibold small">{{ formatearFecha(e.fecha) }}</span>
                     <span class="text-muted small">{{ e.veterinario_nombre || 'Sin veterinario' }}</span>
                   </div>
                   <div class="small mb-1"><strong>Descripción:</strong> {{ e.descripcion }}</div>
@@ -291,15 +291,15 @@ const evolucionesActuales = computed(() => {
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
 })
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalInternacion')!)
 }
 
-function getModalEvoluciones() {
+function obtenerModalEvoluciones() {
   return Modal.getOrCreateInstance(document.getElementById('modalEvoluciones')!)
 }
 
-function getModalNuevaEvolucion() {
+function obtenerModalNuevaEvolucion() {
   return Modal.getOrCreateInstance(document.getElementById('modalNuevaEvolucion')!)
 }
 
@@ -307,7 +307,7 @@ function abrirModalNueva() {
   modoEdicion.value = false
   internacionEditando.value = null
   form.value = formVacio()
-  getModal().show()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(i: Internacion) {
@@ -322,18 +322,18 @@ function abrirModalEditar(i: Internacion) {
     observaciones: i.observaciones || '',
     fecha_egreso: i.fecha_egreso || '',
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 function verEvoluciones(i: Internacion) {
   internacionSeleccionada.value = i
-  getModalEvoluciones().show()
+  obtenerModalEvoluciones().show()
 }
 
 function abrirModalNuevaEvolucion() {
   formEvolucion.value = formEvolucionVacio()
   formEvolucion.value.internacion = internacionSeleccionada.value!.id
-  getModalNuevaEvolucion().show()
+  obtenerModalNuevaEvolucion().show()
 }
 
 async function guardar() {
@@ -362,7 +362,7 @@ async function guardar() {
       Swal.fire({ icon: 'success', title: 'Internación creada', timer: 1500, showConfirmButton: false })
     }
     await internacionStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar la internación.', 'error')
   } finally {
@@ -381,7 +381,7 @@ async function guardarEvolucion() {
     await evolucionStore.crear(formEvolucion.value)
     await evolucionStore.obtenerTodos()
     Swal.fire({ icon: 'success', title: 'Evolución registrada', timer: 1500, showConfirmButton: false })
-    getModalNuevaEvolucion().hide()
+    obtenerModalNuevaEvolucion().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar la evolución.', 'error')
   } finally {
@@ -407,7 +407,7 @@ async function confirmarEliminar(i: Internacion) {
   }
 }
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
@@ -415,7 +415,7 @@ function formatFecha(fecha: string) {
   })
 }
 
-function badgeEstado(estado: EstadoInternacion) {
+function insigniaEstado(estado: EstadoInternacion) {
   const map: Record<EstadoInternacion, string> = {
     internado: 'bg-danger',
     observacion: 'bg-warning text-dark',

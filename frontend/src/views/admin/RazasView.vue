@@ -182,7 +182,7 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label fw-semibold">Especie</label>
-              <select class="form-select" v-model="formRaza.especieId">
+              <select class="form-select" v-model="formularioRaza.especie_id">
                 <option :value="0">Seleccioná una especie</option>
                 <option v-for="e in especieStore.especies" :key="e.id" :value="e.id">
                   {{ e.emoji }} {{ e.nombre }}
@@ -191,7 +191,7 @@
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Nombre de la raza</label>
-              <input type="text" class="form-control" v-model="formRaza.nombre" />
+              <input type="text" class="form-control" v-model="formularioRaza.nombre" />
             </div>
           </div>
           <div class="modal-footer">
@@ -230,7 +230,7 @@ const formEspecie = ref({ nombre: '', emoji: '' })
 
 const modoEdicionRaza = ref(false)
 const razaEditando = ref<Raza | null>(null)
-const formRaza = ref({ nombre: '', especieId: 0 })
+const formularioRaza = ref({ nombre: '', especie_id: 0 })
 
 onMounted(async () => {
   await Promise.all([
@@ -253,15 +253,15 @@ const razasFiltradas = computed(() =>
   })
 )
 
-function contarRazas(especieId: number) {
-  return razaStore.razas.filter((r) => r.especie?.id === especieId).length
+function contarRazas(especie_id: number) {
+  return razaStore.razas.filter((r) => r.especie?.id === especie_id).length
 }
 
-function getModalEspecie() {
+function obtenerModalEspecie() {
   return Modal.getOrCreateInstance(document.getElementById('modalEspecie')!)
 }
 
-function getModalRaza() {
+function obtenerModalRaza() {
   return Modal.getOrCreateInstance(document.getElementById('modalRaza')!)
 }
 
@@ -269,28 +269,28 @@ function abrirModalNuevaEspecie() {
   modoEdicionEspecie.value = false
   especieEditando.value = null
   formEspecie.value = { nombre: '', emoji: '' }
-  getModalEspecie().show()
+  obtenerModalEspecie().show()
 }
 
 function abrirModalEditarEspecie(e: Especie) {
   modoEdicionEspecie.value = true
   especieEditando.value = e
   formEspecie.value = { nombre: e.nombre, emoji: e.emoji ?? '' }
-  getModalEspecie().show()
+  obtenerModalEspecie().show()
 }
 
 function abrirModalNuevaRaza() {
   modoEdicionRaza.value = false
   razaEditando.value = null
-  formRaza.value = { nombre: '', especieId: 0 }
-  getModalRaza().show()
+  formularioRaza.value = { nombre: '', especie_id: 0 }
+  obtenerModalRaza().show()
 }
 
 function abrirModalEditarRaza(r: Raza) {
   modoEdicionRaza.value = true
   razaEditando.value = r
-  formRaza.value = { nombre: r.nombre, especieId: r.especie?.id ?? 0 }
-  getModalRaza().show()
+  formularioRaza.value = { nombre: r.nombre, especie_id: r.especie?.id ?? 0 }
+  obtenerModalRaza().show()
 }
 
 async function guardarEspecie() {
@@ -309,7 +309,7 @@ async function guardarEspecie() {
       Swal.fire({ icon: 'success', title: 'Especie creada', timer: 1500, showConfirmButton: false })
     }
     await especieStore.obtenerTodos()
-    getModalEspecie().hide()
+    obtenerModalEspecie().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar la especie.', 'error')
   } finally {
@@ -318,7 +318,7 @@ async function guardarEspecie() {
 }
 
 async function guardarRaza() {
-  if (!formRaza.value.nombre || !formRaza.value.especieId) {
+  if (!formularioRaza.value.nombre || !formularioRaza.value.especie_id) {
     Swal.fire('Campos requeridos', 'Nombre y especie son obligatorios.', 'warning')
     return
   }
@@ -326,8 +326,8 @@ async function guardarRaza() {
   guardando.value = true
   try {
     const payload = {
-      nombre: formRaza.value.nombre,
-      especie_id: formRaza.value.especieId
+      nombre: formularioRaza.value.nombre,
+      especie_id: formularioRaza.value.especie_id
     }
 
     if (modoEdicionRaza.value && razaEditando.value) {
@@ -338,7 +338,7 @@ async function guardarRaza() {
       Swal.fire({ icon: 'success', title: 'Raza creada', timer: 1500, showConfirmButton: false })
     }
     await razaStore.obtenerTodos()
-    getModalRaza().hide()
+    obtenerModalRaza().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar la raza.', 'error')
   } finally {

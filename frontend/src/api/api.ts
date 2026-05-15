@@ -12,9 +12,9 @@ api.interceptors.request.use(async (config) => {
   const { useAuthStore } = await import('@/stores/authStore')
   const authStore = useAuthStore()
 
-  if (authStore.accessToken) {
+  if (authStore.tokenAcceso) {
     config.headers = config.headers ?? {}
-    config.headers.Authorization = `Bearer ${authStore.accessToken}`
+    config.headers.Authorization = `Bearer ${authStore.tokenAcceso}`
   }
 
   return config
@@ -30,24 +30,24 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    if (error.response.status === 401 && !original._retry) {
-      original._retry = true
+    if (error.response.status === 401 && !original._reintento) {
+      original._reintento = true
 
       const { useAuthStore } = await import('@/stores/authStore')
       const authStore = useAuthStore()
 
-      if (!authStore.refreshToken) {
-        authStore.logout()
+      if (!authStore.tokenRefresco) {
+        authStore.cerrarSesion()
         return Promise.reject(error)
       }
 
       try {
-        await authStore.refresh()
+        await authStore.refrescarToken()
         original.headers = original.headers ?? {}
-        original.headers.Authorization = `Bearer ${authStore.accessToken}`
+        original.headers.Authorization = `Bearer ${authStore.tokenAcceso}`
         return api(original)
       } catch {
-        authStore.logout()
+        authStore.cerrarSesion()
         return Promise.reject(error)
       }
     }

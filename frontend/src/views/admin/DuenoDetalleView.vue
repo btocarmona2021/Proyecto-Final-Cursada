@@ -115,11 +115,11 @@
                 </thead>
                 <tbody>
                   <tr v-for="t in turnosProximos.slice(0, 5)" :key="t.id">
-                    <td class="small">{{ formatFechaHora(t.fecha_hora) }}</td>
+                    <td class="small">{{ formatearFechaHora(t.fecha_hora) }}</td>
                     <td class="small">{{ t.mascota_nombre }}</td>
                     <td class="small">{{ t.servicio_nombre }}</td>
                     <td>
-                      <span class="badge" :class="badgeEstado(t.estado)">
+                      <span class="badge" :class="insigniaEstado(t.estado)">
                         {{ t.estado_display }}
                       </span>
                     </td>
@@ -151,11 +151,11 @@
                 </thead>
                 <tbody>
                   <tr v-for="t in turnosPasados.slice(0, 5)" :key="t.id">
-                    <td class="small">{{ formatFechaHora(t.fecha_hora) }}</td>
+                    <td class="small">{{ formatearFechaHora(t.fecha_hora) }}</td>
                     <td class="small">{{ t.mascota_nombre }}</td>
                     <td class="small">{{ t.servicio_nombre }}</td>
                     <td>
-                      <span class="badge" :class="badgeEstado(t.estado)">
+                      <span class="badge" :class="insigniaEstado(t.estado)">
                         {{ t.estado_display }}
                       </span>
                     </td>
@@ -188,7 +188,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="c in consultasDueno.slice(0, 10)" :key="c.id">
-                    <td class="small">{{ formatFecha(c.fecha) }}</td>
+                    <td class="small">{{ formatearFecha(c.fecha) }}</td>
                     <td class="small">{{ obtenerMascotaNombre(c.mascota) }}</td>
                     <td><span class="badge bg-secondary">{{ c.tipo_display }}</span></td>
                     <td class="small">{{ c.veterinario_nombre ?? '—' }}</td>
@@ -223,24 +223,24 @@ const mascotaStore = useMascotaStore()
 const turnoStore = useTurnoStore()
 const consultaStore = useConsultaStore()
 
-const duenoId = computed(() => Number(route.params.id))
+const idDueno = computed(() => Number(route.params.id))
 
 const dueno = computed(() =>
-  usuarioStore.usuarios.find((u: UsuarioAuth) => u.id === duenoId.value) ?? null
+  usuarioStore.usuarios.find((u: UsuarioAuth) => u.id === idDueno.value) ?? null
 )
 
 const perfil = computed(() =>
-  perfilClienteStore.perfiles.find((p) => p.usuario.id === duenoId.value) ?? null
+  perfilClienteStore.perfiles.find((p) => p.usuario.id === idDueno.value) ?? null
 )
 
 const mascotasDueno = computed(() =>
-  mascotaStore.mascotas.filter((m) => m.usuario === duenoId.value)
+  mascotaStore.mascotas.filter((m) => m.usuario === idDueno.value)
 )
 
-const mascotsIds = computed(() => mascotasDueno.value.map((m) => m.id))
+const idsMascotas = computed(() => mascotasDueno.value.map((m) => m.id))
 
 const turnosDueno = computed(() =>
-  turnoStore.turnos.filter((t) => mascotsIds.value.includes(t.mascota_id))
+  turnoStore.turnos.filter((t) => idsMascotas.value.includes(t.mascota_id))
 )
 
 const turnosProximos = computed(() => {
@@ -259,7 +259,7 @@ const turnosPasados = computed(() => {
 
 const consultasDueno = computed(() =>
   consultaStore.consultas
-    .filter((c: ConsultaClinica) => mascotsIds.value.includes(c.mascota))
+    .filter((c: ConsultaClinica) => idsMascotas.value.includes(c.mascota))
     .sort((a: ConsultaClinica, b: ConsultaClinica) => b.fecha.localeCompare(a.fecha))
 )
 
@@ -288,7 +288,7 @@ onMounted(async () => {
   ])
 })
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
@@ -296,7 +296,7 @@ function formatFecha(fecha: string) {
   })
 }
 
-function formatFechaHora(fechaHora: string) {
+function formatearFechaHora(fechaHora: string) {
   return (
     new Date(fechaHora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }) +
     ' ' +
@@ -304,7 +304,7 @@ function formatFechaHora(fechaHora: string) {
   )
 }
 
-function badgeEstado(estado: EstadoTurno) {
+function insigniaEstado(estado: EstadoTurno) {
   const map: Record<EstadoTurno, string> = {
     reservado: 'bg-primary',
     confirmado: 'bg-success',

@@ -4,7 +4,7 @@ export interface Servicio {
   nombre: string
   descripcion: string | null
   precio: number
-  duracion: number
+  duracion_estimada: number
   activo: boolean
   created_at: string
   updated_at: string
@@ -14,6 +14,6 @@ export interface ServicioForm {
   nombre: string
   descripcion: string
   precio: number
-  duracion: number
+  duracion_estimada: number
   activo: boolean
 }

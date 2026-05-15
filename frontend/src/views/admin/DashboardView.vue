@@ -93,7 +93,7 @@
                   class="text-muted small fw-bold"
                   style="min-width: 48px"
                 >
-                  {{ formatHora(turno.fecha_hora) }}
+                  {{ formatearHora(turno.fecha_hora) }}
                 </span>
                 <div class="flex-grow-1">
                   <div class="fw-semibold small">
@@ -106,7 +106,7 @@
                 </div>
                 <span
                   class="badge"
-                  :class="badgeEstado(turno.estado)"
+                  :class="insigniaEstado(turno.estado)"
                 >
                   {{ turno.estado_display }}
                 </span>
@@ -151,7 +151,7 @@
                 <tr v-for="v in alertasVacunas" :key="v.id">
                   <td>{{ obtenerNombreMascota(v.mascota) }}</td>
                   <td>{{ v.nombre }}</td>
-                  <td>{{ formatFecha(v.fecha_proxima!) }}</td>
+                  <td>{{ formatearFecha(v.fecha_proxima!) }}</td>
                   <td>
                     <span
                       class="badge"
@@ -160,7 +160,7 @@
                       {{
                         v.vencida
                           ? 'Vencida'
-                          : diasRestantes(v.fecha_proxima!) + ' días'
+                          : dias_restantes(v.fecha_proxima!) + ' días'
                       }}
                     </span>
                   </td>
@@ -203,12 +203,12 @@
             <tr v-for="i in internacionesActivas" :key="i.id">
               <td>{{ i.mascota_nombre }}</td>
               <td>{{ i.veterinario_nombre || '-' }}</td>
-              <td>{{ formatFecha(i.fecha_ingreso) }}</td>
+              <td>{{ formatearFecha(i.fecha_ingreso) }}</td>
               <td>{{ i.motivo }}</td>
               <td>
                 <span
                   class="badge"
-                  :class="badgeInternacion(i.estado)"
+                  :class="insigniaInternacion(i.estado)"
                 >
                   {{ i.estado_display }}
                 </span>
@@ -272,12 +272,12 @@ const alertasVacunas = computed(() =>
   vacunaStore.vacunas
     .filter((v) => {
       if (!v.fecha_proxima) return false
-      const dias = diasRestantes(v.fecha_proxima)
+      const dias = dias_restantes(v.fecha_proxima)
       return dias < 0 || (dias >= 0 && dias <= 30)
     })
     .map((v) => ({
       ...v,
-      vencida: diasRestantes(v.fecha_proxima!) < 0,
+      vencida: dias_restantes(v.fecha_proxima!) < 0,
     }))
     .slice(0, 6),
 )
@@ -291,23 +291,23 @@ function obtenerNombreMascota(mascotaId: number): string {
   return mascota?.nombre || 'Desconocido'
 }
 
-const formatFecha = (iso: string) =>
+const formatearFecha = (iso: string) =>
   new Date(iso).toLocaleDateString('es-AR')
 
-const formatHora = (iso: string) =>
+const formatearHora = (iso: string) =>
   new Date(iso).toLocaleTimeString('es-AR', {
     hour: '2-digit',
     minute: '2-digit',
   })
 
-const diasRestantes = (iso: string) => {
+const dias_restantes = (iso: string) => {
   const hoyDate = new Date()
   const target = new Date(iso)
   const diff = target.getTime() - hoyDate.getTime()
   return Math.round(diff / (1000 * 60 * 60 * 24))
 }
 
-const badgeEstado = (estado: EstadoTurno) => {
+const insigniaEstado = (estado: EstadoTurno) => {
   switch (estado) {
     case 'confirmado':
       return 'bg-success'
@@ -322,7 +322,7 @@ const badgeEstado = (estado: EstadoTurno) => {
   }
 }
 
-const badgeInternacion = (estado: EstadoInternacion) => {
+const insigniaInternacion = (estado: EstadoInternacion) => {
   switch (estado) {
     case 'internado':
       return 'bg-danger'

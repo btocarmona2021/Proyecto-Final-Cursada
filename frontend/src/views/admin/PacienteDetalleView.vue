@@ -67,11 +67,11 @@
                 <tbody>
                   <tr v-for="v in vacunasMascota" :key="v.id">
                     <td>{{ v.nombre }}</td>
-                    <td class="small">{{ formatFecha(v.fecha_aplicacion) }}</td>
-                    <td class="small">{{ v.fecha_proxima ? formatFecha(v.fecha_proxima) : '—' }}</td>
+                    <td class="small">{{ formatearFecha(v.fecha_aplicacion) }}</td>
+                    <td class="small">{{ v.fecha_proxima ? formatearFecha(v.fecha_proxima) : '—' }}</td>
                     <td>
                       <span class="badge" :class="estadoVacuna(v.fecha_proxima)">
-                        {{ labelVacuna(v.fecha_proxima) }}
+                        {{ etiquetaVacuna(v.fecha_proxima) }}
                       </span>
                     </td>
                   </tr>
@@ -101,10 +101,10 @@
                 </thead>
                 <tbody>
                   <tr v-for="t in turnosMascota.slice(0, 5)" :key="t.id">
-                    <td class="small">{{ t.fecha_hora ? formatFechaHora(t.fecha_hora) : '—' }}</td>
+                    <td class="small">{{ t.fecha_hora ? formatearFechaHora(t.fecha_hora) : '—' }}</td>
                     <td class="small">{{ t.servicio_nombre }}</td>
                     <td>
-                      <span class="badge" :class="badgeEstado(t.estado)">{{ t.estado_display }}</span>
+                      <span class="badge" :class="insigniaEstado(t.estado)">{{ t.estado_display }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -136,7 +136,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="c in consultasMascota" :key="c.id">
-                    <td class="small">{{ formatFecha(c.fecha) }}</td>
+                    <td class="small">{{ formatearFecha(c.fecha) }}</td>
                     <td><span class="badge bg-secondary">{{ c.tipo_display }}</span></td>
                     <td class="small">{{ c.veterinario_nombre ?? '—' }}</td>
                     <td class="small">{{ c.diagnostico ?? '—' }}</td>
@@ -219,25 +219,25 @@ const formVacuna = ref({
   observaciones: '',
 })
 
-const mascotaId = computed(() => Number(route.params.id))
+const idMascota = computed(() => Number(route.params.id))
 
 const mascota = computed(() =>
-  mascotaStore.mascotas.find((m) => m.id === mascotaId.value) ?? null
+  mascotaStore.mascotas.find((m) => m.id === idMascota.value) ?? null
 )
 
 const vacunasMascota = computed(() =>
-  vacunaStore.vacunas.filter((v) => v.mascota === mascotaId.value)
+  vacunaStore.vacunas.filter((v) => v.mascota === idMascota.value)
 )
 
 const turnosMascota = computed(() =>
   turnoStore.turnos
-    .filter((t) => t.mascota_id === mascotaId.value && t.fecha_hora)
+    .filter((t) => t.mascota_id === idMascota.value && t.fecha_hora)
     .sort((a, b) => b.fecha_hora!.localeCompare(a.fecha_hora!))
 )
 
 const consultasMascota = computed(() =>
   consultaStore.consultas
-    .filter((c: ConsultaClinica) => c.mascota === mascotaId.value)
+    .filter((c: ConsultaClinica) => c.mascota === idMascota.value)
     .sort((a: ConsultaClinica, b: ConsultaClinica) => b.fecha.localeCompare(a.fecha))
 )
 
@@ -250,11 +250,11 @@ onMounted(async () => {
   ])
 })
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function formatFechaHora(fechaHora: string) {
+function formatearFechaHora(fechaHora: string) {
   return new Date(fechaHora).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) +
     ' ' + new Date(fechaHora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
@@ -267,7 +267,7 @@ function estadoVacuna(fechaProxima: string | null) {
   return 'bg-success'
 }
 
-function labelVacuna(fechaProxima: string | null) {
+function etiquetaVacuna(fechaProxima: string | null) {
   if (!fechaProxima) return 'Sin próxima'
   const dias = Math.ceil((new Date(fechaProxima).getTime() - new Date().setHours(0,0,0,0)) / 86400000)
   if (dias < 0) return 'Vencida'
@@ -275,7 +275,7 @@ function labelVacuna(fechaProxima: string | null) {
   return 'Al día'
 }
 
-function badgeEstado(estado: EstadoTurno) {
+function insigniaEstado(estado: EstadoTurno) {
   const map: Record<EstadoTurno, string> = {
     reservado: 'bg-primary', 
     confirmado: 'bg-success',
@@ -287,19 +287,19 @@ function badgeEstado(estado: EstadoTurno) {
   return map[estado] ?? 'bg-secondary'
 }
 
-function getModalVacuna() {
+function obtenerModalVacuna() {
   return Modal.getOrCreateInstance(document.getElementById('modalVacuna')!)
 }
 
 function abrirModalVacuna() {
   formVacuna.value = {
-    mascota: mascotaId.value,
+    mascota: idMascota.value,
     nombre: '',
     fecha_aplicacion: new Date().toISOString().slice(0, 10),
     fecha_proxima: '',
     observaciones: '',
   }
-  getModalVacuna().show()
+  obtenerModalVacuna().show()
 }
 
 function abrirModalEditar() {
@@ -319,7 +319,7 @@ async function guardarVacuna() {
   try {
     await vacunaStore.crear(formVacuna.value)
     await vacunaStore.obtenerTodos()
-    getModalVacuna().hide()
+    obtenerModalVacuna().hide()
     Swal.fire({ icon: 'success', title: 'Vacuna registrada', timer: 1500, showConfirmButton: false })
   } catch {
     Swal.fire('Error', 'No se pudo registrar la vacuna.', 'error')

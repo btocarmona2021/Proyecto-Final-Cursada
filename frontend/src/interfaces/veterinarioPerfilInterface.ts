@@ -18,9 +18,9 @@ export interface VeterinarioPerfilForm {
   // Datos de usuario - normalmente solo en alta
   username?: string
   password?: string
-  firstName?: string
-  lastName?: string
-  email?: string
+  primer_nombre?: string
+  apellido?: string
+  correo?: string
 
   // Datos específicos del veterinario
   matricula: string

@@ -171,7 +171,7 @@ const iniciales = computed(
   () => authStore.grupo?.slice(0, 2).toUpperCase() ?? 'US'
 )
 
-const cerrarSesion = () => authStore.logout()
+const cerrarSesion = () => authStore.cerrarSesion()
 </script>
 
 <style scoped>

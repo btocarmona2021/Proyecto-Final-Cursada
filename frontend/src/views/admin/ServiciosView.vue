@@ -88,7 +88,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Duración (min)</label>
-                <input type="number" class="form-control" v-model.number="form.duracionEstimada" />
+                <input type="number" class="form-control" v-model.number="form.duracion_estimada" />
               </div>
             </div>
             <div class="form-check">
@@ -126,7 +126,7 @@ const formVacio = () => ({
   nombre: '',
   descripcion: '',
   precio: 0,
-  duracionEstimada: 30,
+  duracion_estimada: 30,
   activo: true,
 })
 
@@ -142,7 +142,7 @@ const serviciosFiltrados = computed(() =>
   )
 )
 
-function getModal() {
+function obtenerModal() {
   return Modal.getOrCreateInstance(document.getElementById('modalServicio')!)
 }
 
@@ -150,7 +150,7 @@ function abrirModalNuevo() {
   modoEdicion.value = false
   servicioEditando.value = null
   form.value = formVacio()
-  getModal().show()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(s: Servicio) {
@@ -160,10 +160,10 @@ function abrirModalEditar(s: Servicio) {
     nombre: s.nombre,
     descripcion: s.descripcion || '',
     precio: Number(s.precio),
-    duracionEstimada: s.duracion_estimada,
+    duracion_estimada: s.duracion_estimada,
     activo: s.activo,
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 async function guardar() {
@@ -178,7 +178,7 @@ async function guardar() {
       nombre: form.value.nombre,
       descripcion: form.value.descripcion,
       precio: form.value.precio,
-      duracion_estimada: form.value.duracionEstimada,
+      duracion_estimada: form.value.duracion_estimada,
       activo: form.value.activo,
     }
 
@@ -190,7 +190,7 @@ async function guardar() {
       Swal.fire({ icon: 'success', title: 'Servicio creado', timer: 1500, showConfirmButton: false })
     }
     await servicioStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
   } catch {
     Swal.fire('Error', 'No se pudo guardar el servicio.', 'error')
   } finally {

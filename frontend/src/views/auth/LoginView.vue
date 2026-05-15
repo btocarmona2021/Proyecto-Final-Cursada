@@ -26,18 +26,18 @@
             </div>
 
             <!-- Formulario -->
-            <form @submit.prevent="onSubmit" novalidate>
+            <form @submit.prevent="alEnviar" novalidate>
               <div class="mb-3">
                 <label class="form-label small fw-semibold">Usuario</label>
                 <input
                   v-model.trim="form.username"
                   type="text"
                   class="form-control form-control-sm"
-                  :class="{ 'is-invalid': submitted && !form.username }"
+                  :class="{ 'is-invalid': enviado && !form.username }"
                   autocomplete="username"
                   placeholder="ej: juan.perez"
                 />
-                <div v-if="submitted && !form.username" class="invalid-feedback">
+                <div v-if="enviado && !form.username" class="invalid-feedback">
                   Ingresá tu usuario.
                 </div>
               </div>
@@ -49,18 +49,18 @@
                     v-model="form.password"
                     :type="verPassword ? 'text' : 'password'"
                     class="form-control"
-                    :class="{ 'is-invalid': submitted && !form.password }"
+                    :class="{ 'is-invalid': enviado && !form.password }"
                     autocomplete="current-password"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     class="btn btn-outline-secondary"
-                    @click="togglePassword"
+                    @click="alternarContrasena"
                   >
                     {{ verPassword ? 'Ocultar' : 'Ver' }}
                   </button>
-                  <div v-if="submitted && !form.password" class="invalid-feedback">
+                  <div v-if="enviado && !form.password" class="invalid-feedback">
                     Ingresá tu contraseña.
                   </div>
                 </div>
@@ -82,7 +82,7 @@
                 <button
                   type="button"
                   class="btn btn-link btn-sm p-0 small text-decoration-none"
-                  @click="onForgot"
+                  @click="alOlvidar"
                 >
                   Olvidé mi contraseña
                 </button>
@@ -119,7 +119,7 @@
           <!-- Footer pequeño dentro de la card -->
           <div class="card-footer bg-white border-0 text-center py-3">
             <small class="text-muted d-block" style="font-size: 11px">
-              © {{ currentYear }} VetSystem · Clínica Veterinaria
+              © {{ anioActual }} VetSystem · Clínica Veterinaria
             </small>
           </div>
         </div>
@@ -138,41 +138,41 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import type { LoginForm } from '@/interfaces/usuarioInterface'
+import type { FormularioInicioSesion } from '@/interfaces/usuarioInterface'
 
 const authStore = useAuthStore()
 
-const form = reactive<LoginForm>({
+const form = reactive<FormularioInicioSesion>({
   username: '',
   password: '',
 })
 
-const submitted = ref(false)
+const enviado = ref(false)
 const verPassword = ref(false)
 const recordar = ref(true)
 
-const currentYear = computed(() => new Date().getFullYear())
+const anioActual = computed(() => new Date().getFullYear())
 
-const togglePassword = () => {
+const alternarContrasena = () => {
   verPassword.value = !verPassword.value
 }
 
-const onSubmit = async () => {
-  submitted.value = true
+const alEnviar = async () => {
+  enviado.value = true
   if (!form.username || !form.password) return
   // Podés guardar en localStorage si querés persistir usuario
   try {
-    await authStore.login(form)
-    if (recordar.value && authStore.accessToken) {
-      localStorage.setItem('accessToken', authStore.accessToken)
-      localStorage.setItem('refreshToken', authStore.refreshToken ?? '')
+    await authStore.iniciarSesion(form)
+    if (recordar.value && authStore.tokenAcceso) {
+      localStorage.setItem('accessToken', authStore.tokenAcceso)
+      localStorage.setItem('refreshToken', authStore.tokenRefresco ?? '')
     }
   } catch {
     // el store ya setea el error
   }
 }
 
-const onForgot = () => {
+const alOlvidar = () => {
   // En una versión futura podemos llevar a /recuperar-password
   // Por ahora solo mostramos un alert simple
   window.alert('Contactá con la clínica para restablecer tu contraseña.')

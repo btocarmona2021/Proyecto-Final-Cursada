@@ -9,12 +9,24 @@ export interface UsuarioAuth {
   grupo: string | null  // nombre del grupo principal
 }
 
-export interface LoginForm {
+export interface FormularioInicioSesion {
   username: string
   password: string
 }
 
-export interface TokenResponse {
-  access: string
-  refresh: string
+export interface RespuestaToken {
+  acceso: string
+  refresco: string
+}
+
+export type Usuario = UsuarioAuth
+
+export interface RegistroUsuarioForm {
+  username: string
+  password?: string
+  first_name: string
+  last_name: string
+  email: string
+  telefono?: string
+  direccion?: string
 }

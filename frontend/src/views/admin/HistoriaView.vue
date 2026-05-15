@@ -93,7 +93,7 @@
               :key="c.id"
             >
               <td class="small">
-                {{ formatFecha(c.fecha) }}
+                {{ formatearFecha(c.fecha) }}
               </td>
               <td class="small fw-semibold">
                 {{ c.mascota_nombre }}
@@ -437,7 +437,7 @@ function nombreCompletoVet(v: VeterinarioPerfil): string {
   return `${first} ${last}`.trim() || 'Veterinario'
 }
 
-function formatFecha(iso: string | null | undefined): string {
+function formatearFecha(iso: string | null | undefined): string {
   if (!iso) return '—'
   const d = new Date(iso)
   return d.toLocaleDateString('es-AR', {
@@ -447,7 +447,7 @@ function formatFecha(iso: string | null | undefined): string {
   })
 }
 
-function getModal(): Modal {
+function obtenerModal(): Modal {
   return Modal.getOrCreateInstance(
     document.getElementById('modalConsulta') as HTMLElement,
   )
@@ -472,7 +472,7 @@ function abrirModalNueva() {
     frecuencia_respiratoria: undefined,
     proxima_visita: undefined,
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 function abrirModalEditar(c: ConsultaApi) {
@@ -500,7 +500,7 @@ function abrirModalEditar(c: ConsultaApi) {
     frecuencia_respiratoria: c.frecuencia_respiratoria ?? undefined,
     proxima_visita: c.proxima_visita ?? undefined,
   }
-  getModal().show()
+  obtenerModal().show()
 }
 
 async function guardar() {
@@ -530,7 +530,7 @@ async function guardar() {
     }
 
     await consultaStore.obtenerTodos()
-    getModal().hide()
+    obtenerModal().hide()
   } catch (e) {
     await Swal.fire(
       'Error',

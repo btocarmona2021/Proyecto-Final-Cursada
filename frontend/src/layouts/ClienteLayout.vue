@@ -12,15 +12,15 @@
       <div class="ms-auto d-flex align-items-center gap-2">
         <button
           class="btn btn-sm btn-outline-secondary position-relative"
-          @click="toggleNotificaciones"
+          @click="alternarNotificaciones"
         >
           🔔
           <span
-            v-if="notifCount > 0"
+            v-if="cantidadNotif > 0"
             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
             style="font-size:9px"
           >
-            {{ notifCount }}
+            {{ cantidadNotif }}
           </span>
         </button>
         <span class="small fw-semibold d-none d-sm-inline">
@@ -46,7 +46,7 @@
       v-if="mostrarNotif"
       class="position-fixed top-0 start-0 w-100 h-100"
       style="z-index:1050"
-      @click.self="toggleNotificaciones"
+      @click.self="alternarNotificaciones"
     >
       <div
         class="position-fixed bg-white border rounded-4 shadow-lg p-0"
@@ -58,7 +58,7 @@
           <span class="fw-bold">Notificaciones</span>
           <button
             class="btn btn-sm btn-outline-secondary"
-            @click="toggleNotificaciones"
+            @click="alternarNotificaciones"
           >
             Cerrar
           </button>
@@ -77,7 +77,7 @@
               {{ n.mensaje }}
             </div>
             <div class="text-muted" style="font-size:11px">
-              {{ formatFecha(n.created_at) }}
+              {{ formatearFecha(n.created_at) }}
             </div>
           </div>
           <div
@@ -139,7 +139,7 @@ const notificacionStore = useNotificacionStore()
 
 const mostrarNotif = ref(false)
 
-const notifCount = computed(() => notificacionStore.noLeidas)
+const cantidadNotif = computed(() => notificacionStore.noLeidas)
 const nombreUsuario = computed(() => 'Cliente')
 const iniciales = computed(() => 'CL')
 
@@ -147,12 +147,12 @@ onMounted(() => {
   notificacionStore.obtenerTodos()
 })
 
-const toggleNotificaciones = () => {
+const alternarNotificaciones = () => {
   mostrarNotif.value = !mostrarNotif.value
 }
 
 const cerrarSesion = () => {
-  authStore.logout()
+  authStore.cerrarSesion()
 }
 
 function alertaTipo(tipo: string) {
@@ -165,7 +165,7 @@ function alertaTipo(tipo: string) {
   return map[tipo] ?? 'alert-secondary'
 }
 
-function formatFecha(fecha: string) {
+function formatearFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: 'numeric',
     month: 'short',

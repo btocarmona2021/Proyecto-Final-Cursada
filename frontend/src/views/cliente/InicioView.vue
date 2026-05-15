@@ -10,42 +10,42 @@
     </div>
 
     <!-- Banner próximo turno -->
-    <div v-if="proximo_turno" class="card border-0 shadow-sm mb-3">
+    <div v-if="proximoTurno" class="card border-0 shadow-sm mb-3">
       <div class="card-body d-flex">
         <div
           class="me-3 d-flex flex-column align-items-center justify-content-center px-2"
           style="border-right: 1px solid #eee"
         >
           <div class="fw-bold" style="font-size: 24px">
-            {{ format_dia(proximo_turno.fecha_hora) }}
+            {{ formatearDia(proximoTurno.fecha_hora) }}
           </div>
           <div class="text-uppercase text-muted" style="font-size: 11px">
-            {{ format_mes(proximo_turno.fecha_hora) }}
+            {{ formatearMes(proximoTurno.fecha_hora) }}
           </div>
           <span class="badge bg-success mt-2" style="font-size: 11px">
-            {{ format_hora(proximo_turno.fecha_hora) }}
+            {{ formatearHora(proximoTurno.fecha_hora) }}
           </span>
         </div>
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between align-items-start mb-1">
             <div class="fw-bold" style="font-size: 14px">
               Próximo turno con
-              {{ proximo_turno.veterinario_nombre ?? 'Veterinario' }}
+              {{ proximoTurno.veterinario_nombre ?? 'Veterinario' }}
             </div>
             <span
               class="badge rounded-pill"
-              :class="badge_estado_turno(proximo_turno.estado)"
+              :class="insigniaEstadoTurno(proximoTurno.estado)"
               style="font-size: 11px"
             >
-              {{ proximo_turno.estado_display }}
+              {{ proximoTurno.estado_display }}
             </span>
           </div>
           <div class="text-muted mb-1" style="font-size: 13px">
             Mascota:
-            <strong>{{ proximo_turno.mascota_nombre }}</strong>
+            <strong>{{ proximoTurno.mascota_nombre }}</strong>
           </div>
           <div class="text-muted mb-2" style="font-size: 13px">
-            Servicio: {{ proximo_turno.servicio_nombre }}
+            Servicio: {{ proximoTurno.servicio_nombre }}
           </div>
           <RouterLink
             class="btn btn-sm btn-outline-success"
@@ -97,7 +97,7 @@
               style="width: 48px; height: 48px; background: #e7f5ff"
             >
               <span style="font-size: 1.5rem">
-                {{ avatar_emoji(m.especie_nombre) }}
+                {{ emojiAvatar(m.especie_nombre) }}
               </span>
             </div>
             <div class="flex-grow-1">
@@ -222,17 +222,17 @@ import type { Turno } from '@/interfaces/turnoInterface'
 import type { Mascota } from '@/interfaces/mascotaInterface'
 
 const router = useRouter()
-const turno_store = useTurnoStore()
-const mascota_store = useMascotaStore()
+const turnoStore = useTurnoStore()
+const mascotaStore = useMascotaStore()
 
 onMounted(async () => {
-  await Promise.all([turno_store.obtenerTodos(), mascota_store.obtenerTodos()])
+  await Promise.all([turnoStore.obtenerTodos(), mascotaStore.obtenerTodos()])
 })
 
 const hoy = new Date()
 
 const turnos_futuros_lista = computed<Turno[]>(() =>
-  turno_store.turnos
+  turnoStore.turnos
     .filter((t) => {
       if (!t.fecha_hora) return false
       return new Date(t.fecha_hora) >= hoy
@@ -244,7 +244,7 @@ const turnos_futuros_lista = computed<Turno[]>(() =>
     }),
 )
 
-const proximo_turno = computed<Turno | null>(
+const proximoTurno = computed<Turno | null>(
   () => turnos_futuros_lista.value[0] ?? null,
 )
 
@@ -253,17 +253,17 @@ const turnos_futuros = computed(
 )
 
 const turnos_atendidos = computed(
-  () => turno_store.turnos.filter((t) => t.estado === 'atendido').length,
+  () => turnoStore.turnos.filter((t) => t.estado === 'atendido').length,
 )
 
-const mascotas = computed<Mascota[]>(() => mascota_store.mascotas)
+const mascotas = computed<Mascota[]>(() => mascotaStore.mascotas)
 const mascotas_preview = computed<Mascota[]>(() => mascotas.value.slice(0, 3))
 
 function ir_mascota(id: number) {
   router.push({ name: 'ClienteMascotaDetalle', params: { id } })
 }
 
-function avatar_emoji(especie_nombre: string | null | undefined) {
+function emojiAvatar(especie_nombre: string | null | undefined) {
   const lower = especie_nombre?.toLowerCase() ?? ''
   if (lower.includes('perro')) return '🐶'
   if (lower.includes('gato')) return '🐱'
@@ -272,7 +272,7 @@ function avatar_emoji(especie_nombre: string | null | undefined) {
   return '🐾'
 }
 
-function badge_estado_turno(estado: string) {
+function insigniaEstadoTurno(estado: string) {
   switch (estado) {
     case 'confirmado':
       return 'bg-success'
@@ -289,7 +289,7 @@ function badge_estado_turno(estado: string) {
   }
 }
 
-function format_hora(iso: string | null | undefined) {
+function formatearHora(iso: string | null | undefined) {
   if (!iso) return '--:--'
   return new Date(iso).toLocaleTimeString('es-AR', {
     hour: '2-digit',
@@ -297,14 +297,14 @@ function format_hora(iso: string | null | undefined) {
   })
 }
 
-function format_dia(iso: string | null | undefined) {
+function formatearDia(iso: string | null | undefined) {
   if (!iso) return '--'
   return new Date(iso).toLocaleDateString('es-AR', {
     day: '2-digit',
   })
 }
 
-function format_mes(iso: string | null | undefined) {
+function formatearMes(iso: string | null | undefined) {
   if (!iso) return '--'
   return new Date(iso).toLocaleDateString('es-AR', {
     month: 'short',
