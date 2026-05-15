@@ -1,25 +1,20 @@
 # Proyecto Final — Sistema de Gestión Veterinaria
 
-## Sobre el repositorio
+Aplicacion web para la gestion integral de una clinica veterinaria. Permite administrar mascotas, turnos, historia clinica, internaciones y notificaciones, con roles diferenciados para clientes, veterinarios y administradores.
 
-Este repositorio tiene dos etapas bien diferenciadas:
+## Sobre el desarrollo
 
-| Etapa | Commits | Descripción |
-|-------|---------|-------------|
-| Proyecto inicial | `30f0d1c` → `ee37c11` | Primer proyecto, estructura monolítica en Django |
-| Transición | `0d0d9ad` | Reinicio: cambio de proyecto y tecnología |
-| Proyecto final | `a19ccd3` en adelante | Sistema de Gestión Veterinaria — Django REST + Vue 3 |
+El proyecto arranco con otro enfoque y sobre la marcha lo replantie por completo. Los primeros commits del repo corresponden a esa etapa inicial, y a partir de cierto punto empece de cero con una arquitectura mas solida separando backend (API REST) y frontend (SPA). El cambio fue una decision de diseño para lograr mejor organizacion y escalabilidad.
 
-El cambio de rumbo fue intencional: comencé con otro enfoque y luego decidí replantear el proyecto desde cero con una arquitectura más sólida (API REST + SPA). El commit `0d0d9ad` marca esa ruptura eliminando el código viejo y `a19ccd3` introduce el código nuevo completo.
-
-## Stack actual
-
-- **Backend**: Django + Django REST Framework + Simple JWT + PostgreSQL
-- **Frontend**: Vue 3 + TypeScript + Pinia + Bootstrap 5
-- **Infra**: Docker + Docker Compose
-
-## Ejecutar
+## Como levantar el proyecto
 
 ```bash
 docker compose up -d --build
 ```
+
+## Tecnologias usadas
+
+- Backend: Django + Django REST Framework + Simple JWT
+- Frontend: Vue 3 + TypeScript + Pinia + Bootstrap 5
+- Base de datos: PostgreSQL
+- Infraestructura: Docker + Docker Compose
