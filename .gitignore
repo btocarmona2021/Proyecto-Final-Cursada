@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+
+# Django
+*.log
+db.sqlite3
+/media/
+
+# Environment
+.env
+.env.user
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Trash
+frontend/views.txt
+frontend/stores.txt
+frontend/services.txt
+frontend/router.txt
+frontend/interfaces.txt
+frontend/layouts.txt
+frontend/api.txt
