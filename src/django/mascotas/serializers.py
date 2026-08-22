@@ -58,6 +58,7 @@ class MascotaCreateSerializer(serializers.ModelSerializer):
             "peso_actual",
             "microchip",
             "foto",
+            "observaciones",
             "usuario",
         ]
         read_only_fields = ["id"]
@@ -99,6 +100,7 @@ class MascotaSerializer(serializers.ModelSerializer):
             "peso_actual",
             "microchip",
             "foto",
+            "observaciones",
             "usuario",
             "usuario_info",
             "usuario_nombre",

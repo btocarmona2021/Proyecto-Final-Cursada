@@ -22,7 +22,7 @@ export interface Turno {
   notas: string | null
   creado_por_cliente: boolean
   dueno_nombre: string | null
-  hora_fin: string | null  // ← NUEVO
+  hora_fin: string | null
   created_at: string
   updated_at: string
   activo: boolean

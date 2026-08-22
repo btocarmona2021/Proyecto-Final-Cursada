@@ -14,9 +14,7 @@ class NotificacionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """
-        SEGURIDAD: Cada usuario solo ve sus notificaciones.
-        """
+        """Cada usuario solo ve sus propias notificaciones."""
         queryset = Notificacion.objects.select_related("usuario").filter(
             usuario=self.request.user
         )

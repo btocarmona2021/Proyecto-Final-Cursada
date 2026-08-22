@@ -1,18 +1,4 @@
-# core/permissions.py
-"""
-Sistema de permisos personalizado para el proyecto Veterinaria.
-
-Este archivo centraliza toda la lógica de permisos del sistema,
-siguiendo las mejores prácticas de Django REST Framework.
-
-Grupos de usuarios:
-- clientes: Usuarios finales con mascotas
-- veterinarios: Staff médico
-- admin: Administradores (superuser)
-"""
-
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-
 
 # ============================================================================
 # PERMISOS GENERALES POR ROL
@@ -25,7 +11,6 @@ class IsCliente(BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.groups.filter(name='clientes').exists()
-
 
 class IsVeterinario(BasePermission):
     """
@@ -72,14 +57,6 @@ class ReadOnly(BasePermission):
 # ============================================================================
 
 class CanManageMascota(BasePermission):
-    """
-    Permisos para gestionar mascotas:
-    - GET: Todos (filtrado en get_queryset)
-    - POST: Solo veterinarios y admins
-    - PUT/PATCH/DELETE: Dueño o staff
-
-    Uso: permission_classes = [IsAuthenticated, CanManageMascota]
-    """
 
     def has_permission(self, request, view):
         """Validación a nivel de endpoint"""

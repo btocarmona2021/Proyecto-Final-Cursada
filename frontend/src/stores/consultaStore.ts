@@ -8,13 +8,13 @@ import type {
 } from '@/interfaces/consultaClinicaInterface'
 
 export const useConsultaStore = defineStore('consulta', () => {
-  // State
+  // Estado
   const consultas = ref<ConsultaClinica[]>([])
   const consultaSeleccionada = ref<ConsultaClinica | null>(null)
   const cargando = ref(false)
   const error = ref<string | null>(null)
 
-  // Actions
+  // Acciones
   const obtenerTodos = async (): Promise<void> => {
     cargando.value = true
     error.value = null
@@ -105,12 +105,12 @@ export const useConsultaStore = defineStore('consulta', () => {
   }
 
   return {
-    // state
+    // estado
     consultas,
     consultaSeleccionada,
     cargando,
     error,
-    // actions
+    // acciones
     obtenerTodos,
     obtenerUno,
     crear,

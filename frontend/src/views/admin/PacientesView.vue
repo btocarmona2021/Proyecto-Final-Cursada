@@ -165,6 +165,7 @@ import { useEspecieStore } from '@/stores/especieStore'
 import { useRazaStore } from '@/stores/razaStore'
 import { useUsuarioStore } from '@/stores/usuarioStore'
 import type { Mascota, MascotaForm } from '@/interfaces/mascotaInterface'
+import type { UsuarioAuth } from '@/interfaces/usuarioInterface'
 
 const mascotaStore = useMascotaStore()
 const especieStore = useEspecieStore()
@@ -202,7 +203,7 @@ onMounted(async () => {
 })
 
 const soloClientes = computed(() =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   usuarioStore.usuarios.filter((u: UsuarioAuth) => u.grupo === 'clientes')
 )
 

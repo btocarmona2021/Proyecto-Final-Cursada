@@ -11,9 +11,9 @@ import type { RespuestaToken } from '@/interfaces/usuarioInterface';
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
-  const tokenAcceso = ref<string | null>(null);
-  const tokenRefresco = ref<string | null>(null);
-  const grupo = ref<string | null>(null);
+  const tokenAcceso = ref<string | null>(localStorage.getItem('accessToken'));
+  const tokenRefresco = ref<string | null>(localStorage.getItem('refreshToken'));
+  const grupo = ref<string | null>(localStorage.getItem('grupo'));
   const cargando = ref(false);
   const error = ref<string | null>(null);
 
@@ -48,10 +48,12 @@ export const useAuthStore = defineStore('auth', () => {
       tokenAcceso.value = tokens.access;
       tokenRefresco.value = tokens.refresh;
 
-      // Como el tipo RespuestaToken no tiene `grupo`, lo tomamos del backend
-      // con un cast explícito, para no romper el tipado global.
       const maybeWithGroup = tokens as RespuestaToken & { grupo?: string | null };
       grupo.value = maybeWithGroup.grupo ?? null;
+
+      localStorage.setItem('accessToken', tokens.access);
+      localStorage.setItem('refreshToken', tokens.refresh);
+      localStorage.setItem('grupo', grupo.value ?? '');
 
       router.push(redireccionPorGrupo());
     } catch (e: unknown) {
@@ -62,8 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  // En tu proyecto el registro de usuarios usa RegistroClienteForm
-  // (username, password, firstname, lastname, email, etc.). [file:7][file:3]
+  // En el registro se usa RegistroClienteForm (username, password, nombres, email, etc.)
   const registrar = async (data: RegistroClienteForm) => {
     cargando.value = true;
     error.value = null;
@@ -82,13 +83,23 @@ export const useAuthStore = defineStore('auth', () => {
     if (!tokenRefresco.value) throw new Error('No refresh token');
     const tokens = await authService.refreshToken(tokenRefresco.value);
     tokenAcceso.value = tokens.access;
+    tokenRefresco.value = tokens.refresh;
+    localStorage.setItem('accessToken', tokens.access);
+    localStorage.setItem('refreshToken', tokens.refresh);
   };
 
   const cerrarSesion = () => {
+    const refresh = tokenRefresco.value;
+    if (refresh) {
+      authService.logout(refresh).catch(() => {});
+    }
     tokenAcceso.value = null;
     tokenRefresco.value = null;
     grupo.value = null;
     error.value = null;
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('grupo');
     router.push('/login');
   };
 

@@ -13,6 +13,6 @@ export interface Raza {
 
 export interface RazaForm {
   nombre: string
-  especie_id: number  // ← Cambiar de especieId a especie_id
+  especie_id: number
   activo?: boolean
 }

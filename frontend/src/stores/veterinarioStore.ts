@@ -18,8 +18,9 @@ export const useVeterinarioStore = defineStore('veterinario', () => {
     error.value = null
     try {
       veterinarios.value = await perfilVeterinarioService.obtenerTodos()
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener veterinarios'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -29,10 +30,10 @@ export const useVeterinarioStore = defineStore('veterinario', () => {
     cargando.value = true
     error.value = null
     try {
-      veterinarioSeleccionado.value =
-        await perfilVeterinarioService.obtenerUno(id)
-    } catch {
+      veterinarioSeleccionado.value = await perfilVeterinarioService.obtenerUno(id)
+    } catch (e) {
       error.value = 'Error al obtener el veterinario'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -44,8 +45,9 @@ export const useVeterinarioStore = defineStore('veterinario', () => {
     try {
       const nuevo = await perfilVeterinarioService.crear(data)
       veterinarios.value.push(nuevo)
-    } catch {
+    } catch (e) {
       error.value = 'Error al crear el veterinario'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -58,8 +60,9 @@ export const useVeterinarioStore = defineStore('veterinario', () => {
       const actualizado = await perfilVeterinarioService.actualizar(id, data)
       const index = veterinarios.value.findIndex((v) => v.id === id)
       if (index !== -1) veterinarios.value[index] = actualizado
-    } catch {
+    } catch (e) {
       error.value = 'Error al actualizar el veterinario'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -71,8 +74,9 @@ export const useVeterinarioStore = defineStore('veterinario', () => {
     try {
       await perfilVeterinarioService.eliminar(id)
       veterinarios.value = veterinarios.value.filter((v) => v.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al eliminar el veterinario'
+      throw e
     } finally {
       cargando.value = false
     }

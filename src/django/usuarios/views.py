@@ -17,12 +17,22 @@ from core.permissions import IsAdminUser, IsVeterinarioOrAdmin
 
 class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Solo lectura - para listar usuarios.
-    Requiere autenticación.
+    Listado de usuarios.
+    Solo los administradores pueden eliminar.
     """
     queryset = User.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        usuario = self.get_object()
+        usuario.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ClienteViewSet(viewsets.ModelViewSet):

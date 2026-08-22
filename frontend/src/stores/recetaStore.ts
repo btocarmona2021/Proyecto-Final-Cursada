@@ -2,10 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import recetasService from '@/services/recetasService'
-import type {
-  RecetaItem,
-  RecetaItemForm,
-} from '@/interfaces/recetaItemInterface'
+import type { RecetaItem, RecetaItemForm } from '@/interfaces/recetaItemInterface'
 
 export const useRecetaStore = defineStore('receta', () => {
   const recetas = ref<RecetaItem[]>([])
@@ -18,8 +15,9 @@ export const useRecetaStore = defineStore('receta', () => {
     error.value = null
     try {
       recetas.value = await recetasService.obtenerTodos()
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener recetas'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -30,8 +28,9 @@ export const useRecetaStore = defineStore('receta', () => {
     error.value = null
     try {
       recetaSeleccionada.value = await recetasService.obtenerUno(id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener la receta'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -43,8 +42,9 @@ export const useRecetaStore = defineStore('receta', () => {
     try {
       const nueva = await recetasService.crear(data)
       recetas.value.push(nueva)
-    } catch {
+    } catch (e) {
       error.value = 'Error al crear la receta'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -57,8 +57,9 @@ export const useRecetaStore = defineStore('receta', () => {
       const actualizada = await recetasService.actualizar(id, data)
       const index = recetas.value.findIndex((r) => r.id === id)
       if (index !== -1) recetas.value[index] = actualizada
-    } catch {
+    } catch (e) {
       error.value = 'Error al actualizar la receta'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -70,8 +71,9 @@ export const useRecetaStore = defineStore('receta', () => {
     try {
       await recetasService.eliminar(id)
       recetas.value = recetas.value.filter((r) => r.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al eliminar la receta'
+      throw e
     } finally {
       cargando.value = false
     }

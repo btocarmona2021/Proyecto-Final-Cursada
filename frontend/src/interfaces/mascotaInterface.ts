@@ -6,22 +6,23 @@ export interface Mascota {
   nombre: string
 
   raza: number  // ID de la raza
-  raza_nombre: string  // ← snake_case
-  especie_nombre: string  // ← snake_case
+  raza_nombre: string
+  especie_nombre: string
 
   fecha_nacimiento: string | null
   edad_anos: number | null
 
   sexo: 'M' | 'H'
-  sexo_display: string  // ← snake_case
+  sexo_display: string
 
   color: string | null
-  peso_actual: string | null  // ← snake_case
+  peso_actual: string | null
   microchip: string | null
   foto: string | null
+  observaciones: string | null
 
   usuario: number  // ID del dueño
-  usuario_nombre: string  // ← snake_case
+  usuario_nombre: string
 
   created_at: string
   updated_at: string
@@ -38,5 +39,6 @@ export interface MascotaForm {
   peso_actual?: number
   microchip?: string
   foto?: File | null
+  observaciones?: string
   usuario: number // id del dueño
 }

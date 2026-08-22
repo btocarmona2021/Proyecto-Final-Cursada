@@ -66,19 +66,7 @@
                 </div>
               </div>
 
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="form-check form-check-sm">
-                  <input
-                    id="recordarme"
-                    v-model="recordar"
-                    class="form-check-input"
-                    type="checkbox"
-                    style="transform: scale(0.9)"
-                  />
-                  <label class="form-check-label small" for="recordarme">
-                    Recordarme en este dispositivo
-                  </label>
-                </div>
+              <div class="d-flex justify-content-end align-items-center mb-3">
                 <button
                   type="button"
                   class="btn btn-link btn-sm p-0 small text-decoration-none"
@@ -118,7 +106,13 @@
 
           <!-- Footer pequeño dentro de la card -->
           <div class="card-footer bg-white border-0 text-center py-3">
-            <small class="text-muted d-block" style="font-size: 11px">
+            <small class="text-muted d-block" style="font-size: 12px">
+              ¿No tenés cuenta?
+              <RouterLink :to="{ name: 'Registro' }" class="text-decoration-none">
+                Registrate acá
+              </RouterLink>
+            </small>
+            <small class="text-muted d-block mt-1" style="font-size: 11px">
               © {{ anioActual }} VetSystem · Clínica Veterinaria
             </small>
           </div>
@@ -149,7 +143,6 @@ const form = reactive<FormularioInicioSesion>({
 
 const enviado = ref(false)
 const verPassword = ref(false)
-const recordar = ref(true)
 
 const anioActual = computed(() => new Date().getFullYear())
 
@@ -163,10 +156,6 @@ const alEnviar = async () => {
   // Podés guardar en localStorage si querés persistir usuario
   try {
     await authStore.iniciarSesion(form)
-    if (recordar.value && authStore.tokenAcceso) {
-      localStorage.setItem('accessToken', authStore.tokenAcceso)
-      localStorage.setItem('refreshToken', authStore.tokenRefresco ?? '')
-    }
   } catch {
     // el store ya setea el error
   }

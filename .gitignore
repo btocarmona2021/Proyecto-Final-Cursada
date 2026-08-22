@@ -35,3 +35,6 @@ frontend/router.txt
 frontend/interfaces.txt
 frontend/layouts.txt
 frontend/api.txt
+
+# Notas personales
+src/django/ReadmeProfesor.md

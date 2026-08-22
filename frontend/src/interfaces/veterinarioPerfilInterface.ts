@@ -3,7 +3,7 @@ import type { UsuarioAuth } from './usuarioInterface'
 // Perfil de veterinario tal como lo devuelve el backend
 export interface VeterinarioPerfil {
   id: number
-  usuario: UsuarioAuth  // ← Contiene first_name, last_name
+  usuario: UsuarioAuth
   matricula: string
   especialidad: string | null
   biografia: string | null

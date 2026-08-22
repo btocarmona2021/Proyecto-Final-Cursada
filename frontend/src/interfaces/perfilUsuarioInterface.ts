@@ -23,8 +23,8 @@ export interface PerfilUsuarioForm {
 export interface RegistroClienteForm {
   username: string
   password: string
-  first_name: string  // ← snake_case
-  last_name: string   // ← snake_case
+  first_name: string
+  last_name: string
   email: string
   telefono?: string
   direccion?: string

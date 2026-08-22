@@ -1,11 +1,14 @@
 from pathlib import Path
 import os
-from datetime import timedelta  # ← AGREGAR ESTE IMPORT
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = "django-insecure-vrf+t%s(@p0+@phoizqxav&s__u91c$_&5kw%gf9%6*j)1bqb-"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-vrf+t%s(@p0+@phoizqxav&s__u91c$_&5kw%gf9%6*j)1bqb-",
+)
 
 
 DEBUG = os.environ.get("DEBUG", "0") == "1"
@@ -23,7 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",  # ← AGREGAR (opcional pero recomendado)
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "core",
     "usuarios.apps.UsuariosConfig",
@@ -112,6 +115,9 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -120,28 +126,27 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.ScopedRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/min",
+    },
 }
 
 
-# ← AGREGAR ESTA CONFIGURACIÓN COMPLETA DE SIMPLE_JWT
 SIMPLE_JWT = {
-    # Duración de tokens
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),  # Token de acceso válido por 1 hora
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token válido por 7 días
-    # Rotación de refresh tokens (opcional pero seguro)
-    "ROTATE_REFRESH_TOKENS": True,  # Genera nuevo refresh token al refrescar
-    "BLACKLIST_AFTER_ROTATION": True,  # Invalida el refresh token anterior
-    # Configuración de headers
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    # Algoritmo de encriptación
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
-    # Claims del token
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
-    # Serializer personalizado (apunta a tu archivo)
-    "TOKEN_OBTAIN_SERIALIZER": "usuarios.token_personalizado.CustomTokenObtainPairSerializer",  # ← Ajustar ruta
+    "TOKEN_OBTAIN_SERIALIZER": "usuarios.token_personalizado.CustomTokenObtainPairSerializer",
 }
 
 

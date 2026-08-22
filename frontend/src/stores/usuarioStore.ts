@@ -36,6 +36,20 @@ export const useUsuarioStore = defineStore('usuario', () => {
     }
   }
 
+  const eliminar = async (id: number) => {
+    cargando.value = true
+    error.value = null
+    try {
+      await usuariosService.eliminar(id)
+      usuarios.value = usuarios.value.filter((u) => u.id !== id)
+    } catch (e) {
+      error.value = 'Error al eliminar el usuario'
+      throw e
+    } finally {
+      cargando.value = false
+    }
+  }
+
   return {
     usuarios,
     usuarioSeleccionado,
@@ -43,5 +57,6 @@ export const useUsuarioStore = defineStore('usuario', () => {
     error,
     obtenerTodos,
     obtenerUno,
+    eliminar,
   }
 })

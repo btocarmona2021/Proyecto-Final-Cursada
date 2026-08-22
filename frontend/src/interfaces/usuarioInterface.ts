@@ -3,8 +3,8 @@
 export interface UsuarioAuth {
   id: number
   username: string
-  first_name: string  // ← snake_case (como viene del backend)
-  last_name: string   // ← snake_case
+  first_name: string
+  last_name: string
   email: string
   grupo: string | null  // nombre del grupo principal
 }

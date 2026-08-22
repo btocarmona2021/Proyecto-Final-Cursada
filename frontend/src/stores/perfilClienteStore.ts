@@ -19,8 +19,9 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
     error.value = null
     try {
       perfiles.value = await perfilClienteService.obtenerTodos()
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener perfiles'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -31,8 +32,9 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
     error.value = null
     try {
       perfilSeleccionado.value = await perfilClienteService.obtenerUno(id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener el perfil'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -44,8 +46,9 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
     try {
       const nuevo = await perfilClienteService.crear(data)
       perfiles.value.push(nuevo)
-    } catch {
+    } catch (e) {
       error.value = 'Error al crear el perfil'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -58,8 +61,9 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
       const actualizado = await perfilClienteService.actualizar(id, data)
       const index = perfiles.value.findIndex((p) => p.id === id)
       if (index !== -1) perfiles.value[index] = actualizado
-    } catch {
+    } catch (e) {
       error.value = 'Error al actualizar el perfil'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -71,8 +75,9 @@ export const usePerfilClienteStore = defineStore('perfilCliente', () => {
     try {
       await perfilClienteService.eliminar(id)
       perfiles.value = perfiles.value.filter((p) => p.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al eliminar el perfil'
+      throw e
     } finally {
       cargando.value = false
     }

@@ -3,13 +3,14 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import action
 from .models import Turno, Servicio
 from .serializers import (
     TurnoSerializer,
     TurnoCreateSerializer,
     ServicioSerializer
 )
-from core.permissions import CanManageTurno, CanManageServicio
+from core.permissions import CanManageTurno, CanManageServicio, CanCancelTurno
 
 
 class ServicioViewSet(viewsets.ModelViewSet):
@@ -30,9 +31,7 @@ class TurnoViewSet(viewsets.ModelViewSet):
     - POST: Todos (validado en perform_create)
     - PUT/PATCH/DELETE: Solo veterinarios/admins
 
-    SEGURIDAD: 
-    - Clientes solo ven turnos de SUS mascotas
-    - Clientes solo crean turnos para SUS mascotas
+    Los clientes solo ven y crean turnos de sus propias mascotas.
     """
     permission_classes = [IsAuthenticated, CanManageTurno]
 
@@ -43,9 +42,8 @@ class TurnoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        SEGURIDAD (GET):
-        - Clientes: solo ven turnos de SUS mascotas
-        - Veterinarios/Admins: ven TODOS los turnos
+        Los clientes solo ven los turnos de sus mascotas.
+        Veterinarios y admins ven todos los turnos.
         """
         queryset = Turno.objects.select_related(
             "mascota",
@@ -78,9 +76,8 @@ class TurnoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        SEGURIDAD (POST):
-        - Clientes: pueden crear turnos SOLO para SUS mascotas
-        - Veterinarios/Admins: pueden crear turnos para CUALQUIER mascota
+        Los clientes solo pueden crear turnos para sus mascotas.
+        Veterinarios y admins pueden crear turnos para cualquier mascota.
         """
         user = self.request.user
         mascota = serializer.validated_data.get('mascota')
@@ -115,3 +112,12 @@ class TurnoViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, CanCancelTurno])
+    def cancelar(self, request, pk=None):
+        """Cancela un turno. El cliente solo puede cancelar sus propios turnos."""
+        turno = self.get_object()
+        turno.estado = Turno.Estado.CANCELADO
+        turno.save()
+        serializer = TurnoSerializer(turno)
+        return Response(serializer.data)

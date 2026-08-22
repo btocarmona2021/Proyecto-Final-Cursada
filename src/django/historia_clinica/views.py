@@ -20,11 +20,7 @@ class ConsultaClinicaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """
-        SEGURIDAD:
-        - Veterinarios/Admins: ven TODAS las consultas
-        - Clientes: solo consultas de SUS mascotas
-        """
+        """Los clientes solo ven las consultas de sus mascotas."""
         user = self.request.user
         queryset = (
             ConsultaClinica.objects.select_related("mascota", "veterinario__usuario")
@@ -72,11 +68,7 @@ class VacunaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """
-        SEGURIDAD:
-        - Veterinarios/Admins: ven TODAS las vacunas
-        - Clientes: solo vacunas de SUS mascotas
-        """
+        """Los clientes solo ven las vacunas de sus mascotas."""
         user = self.request.user
         queryset = Vacuna.objects.select_related(
             "mascota", "veterinario__usuario"

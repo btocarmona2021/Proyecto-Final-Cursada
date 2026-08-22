@@ -15,8 +15,9 @@ export const useMascotaStore = defineStore('mascota', () => {
     error.value = null
     try {
       mascotas.value = await mascotasService.obtenerTodos()
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener mascotas'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -27,8 +28,9 @@ export const useMascotaStore = defineStore('mascota', () => {
     error.value = null
     try {
       mascotaSeleccionada.value = await mascotasService.obtenerUno(id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener la mascota'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -40,8 +42,9 @@ export const useMascotaStore = defineStore('mascota', () => {
     try {
       const nueva = await mascotasService.crear(data)
       mascotas.value.push(nueva)
-    } catch {
+    } catch (e) {
       error.value = 'Error al crear la mascota'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -54,8 +57,9 @@ export const useMascotaStore = defineStore('mascota', () => {
       const actualizada = await mascotasService.actualizar(id, data)
       const index = mascotas.value.findIndex((m) => m.id === id)
       if (index !== -1) mascotas.value[index] = actualizada
-    } catch {
+    } catch (e) {
       error.value = 'Error al actualizar la mascota'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -67,8 +71,9 @@ export const useMascotaStore = defineStore('mascota', () => {
     try {
       await mascotasService.eliminar(id)
       mascotas.value = mascotas.value.filter((m) => m.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al eliminar la mascota'
+      throw e
     } finally {
       cargando.value = false
     }

@@ -1,19 +1,14 @@
-# importo Serializer de rest_framework para crear serializers para los modelos Servicio y Turno.
+# agenda/serializers.py
 from rest_framework import serializers
 
-# importo los modelos Servicio y Turno para crear serializers basados en ellos.
 from .models import Servicio, Turno
 
-# importo serializers de Mascota y Veterinario para incluir información relacionada en el serializer de Turno.
 from mascotas.serializers import MascotaSerializer
 
-# importo el serializer de Veterinario para incluir información del veterinario en el serializer de Turno.
 from usuarios.serializers import VeterinarioPerfilSerializer
 
-# importo timedelta y timezone para validar que no haya turnos solapados para el mismo veterinario.
 from datetime import timedelta, timezone as dt_timezone
 
-# importo timezone de django para manejar zonas horarias en la validación de turnos solapados.
 from django.utils import timezone
 
 
@@ -156,6 +151,7 @@ class TurnoSerializer(serializers.ModelSerializer):
             "motivo_consulta",
             "notas",
             "creado_por_cliente",
+            "urgencia",
             "dueno_nombre",
             "hora_fin",
             "created_at",

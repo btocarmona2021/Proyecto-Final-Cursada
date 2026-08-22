@@ -15,8 +15,9 @@ export const useVacunaStore = defineStore('vacuna', () => {
     error.value = null
     try {
       vacunas.value = await vacunasService.obtenerTodos()
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener vacunas'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -27,8 +28,9 @@ export const useVacunaStore = defineStore('vacuna', () => {
     error.value = null
     try {
       vacunaSeleccionada.value = await vacunasService.obtenerUno(id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al obtener la vacuna'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -40,8 +42,9 @@ export const useVacunaStore = defineStore('vacuna', () => {
     try {
       const nueva = await vacunasService.crear(data)
       vacunas.value.push(nueva)
-    } catch {
+    } catch (e) {
       error.value = 'Error al crear la vacuna'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -54,8 +57,9 @@ export const useVacunaStore = defineStore('vacuna', () => {
       const actualizada = await vacunasService.actualizar(id, data)
       const index = vacunas.value.findIndex((v) => v.id === id)
       if (index !== -1) vacunas.value[index] = actualizada
-    } catch {
+    } catch (e) {
       error.value = 'Error al actualizar la vacuna'
+      throw e
     } finally {
       cargando.value = false
     }
@@ -67,8 +71,9 @@ export const useVacunaStore = defineStore('vacuna', () => {
     try {
       await vacunasService.eliminar(id)
       vacunas.value = vacunas.value.filter((v) => v.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Error al eliminar la vacuna'
+      throw e
     } finally {
       cargando.value = false
     }

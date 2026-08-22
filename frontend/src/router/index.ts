@@ -11,6 +11,13 @@ const routes = [
   },
 
   {
+    path: '/registro',
+    name: 'Registro',
+    component: () => import('@/views/auth/RegistroView.vue'),
+    meta: { invitado: true },
+  },
+
+  {
     path: '/admin',
     component: () => import('@/layouts/AdminLayout.vue'),
     meta: { requiereAuth: true, roles: ['administradores', 'veterinarios'] },
@@ -161,6 +168,11 @@ router.beforeEach((to) => {
     if (to.path !== '/login') {
       return '/login'
     }
+  }
+
+  const rolesPermitidos = to.meta.roles as string[] | undefined
+  if (rolesPermitidos && auth.grupo && !rolesPermitidos.includes(auth.grupo)) {
+    return auth.redireccionPorGrupo()
   }
 
   return true

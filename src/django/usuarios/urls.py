@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from usuarios.token_personalizado import CustomTokenObtainPairView
+from usuarios.token_personalizado import CustomTokenObtainPairView, LogoutView
 from usuarios.views import (
     UsuarioViewSet,
     ClienteViewSet,
@@ -19,5 +19,6 @@ router.register(r'horarios', HorarioVeterinarioViewSet, basename='horario')
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('', include(router.urls)),
 ]

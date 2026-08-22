@@ -26,6 +26,11 @@ const turnosService = {
   async eliminar(id: number): Promise<void> {
     await api.delete(`/turnos/${id}/`)
   },
+
+  async cancelar(id: number): Promise<Turno> {
+    const response = await api.post<Turno>(`/turnos/${id}/cancelar/`)
+    return response.data
+  },
 }
 
 export default turnosService

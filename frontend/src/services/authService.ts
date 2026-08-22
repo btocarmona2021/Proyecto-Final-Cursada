@@ -1,6 +1,7 @@
 // src/services/authService.ts
 import api from '@/api/api'
 import type { FormularioInicioSesion, RespuestaToken } from '@/interfaces/usuarioInterface'
+import type { RegistroClienteForm } from '@/interfaces/perfilUsuarioInterface'
 
 const authService = {
   async login(data: FormularioInicioSesion): Promise<RespuestaToken> {
@@ -8,8 +9,8 @@ const authService = {
     return response.data
   },
 
-  async refreshToken(refresh: string): Promise<{ access: string }> {
-    const response = await api.post<{ access: string }>('/token/refresh/', {
+  async refreshToken(refresh: string): Promise<RespuestaToken> {
+    const response = await api.post<RespuestaToken>('/token/refresh/', {
       refresh,
     })
     return response.data
@@ -17,6 +18,10 @@ const authService = {
 
   async registrar(data: RegistroClienteForm): Promise<void> {
     await api.post('/clientes/', data)
+  },
+
+  async logout(refresh: string): Promise<void> {
+    await api.post('/logout/', { refresh })
   },
 }
 

@@ -144,13 +144,11 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-2">
-              <!-- Acción de cancelar futura, solo preparada, puedes bloquear en permisos backend -->
               <button
-                v-if="esFuturo(t)"
+                v-if="puedeCancelar(t)"
                 class="btn btn-sm btn-outline-danger"
                 type="button"
-                disabled
-                title="En el futuro podrás cancelar desde aquí"
+                @click="cancelarTurno(t)"
               >
                 Cancelar
               </button>
@@ -164,6 +162,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import Swal from 'sweetalert2'
 import { useTurnoStore } from '@/stores/turnoStore'
 import type { Turno } from '@/interfaces/turnoInterface'
 
@@ -225,6 +224,37 @@ const totalCancelados = computed(
 function esFuturo(t: Turno): boolean {
   if (!t.fecha_hora) return false
   return new Date(t.fecha_hora) >= new Date()
+}
+
+function puedeCancelar(t: Turno): boolean {
+  if (!esFuturo(t)) return false
+  return t.estado === 'reservado' || t.estado === 'confirmado'
+}
+
+async function cancelarTurno(t: Turno) {
+  const resultado = await Swal.fire({
+    title: '¿Cancelar turno?',
+    text: `Turno de ${t.mascota_nombre} el ${formatearDia(t.fecha_hora)} de ${formatearMes(t.fecha_hora)} a las ${formatearHora(t.fecha_hora)}`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonText: 'Volver',
+    confirmButtonText: 'Sí, cancelar',
+  })
+
+  if (resultado.isConfirmed) {
+    try {
+      await turnoStore.cancelar(t.id)
+      Swal.fire({
+        icon: 'success',
+        title: 'Turno cancelado',
+        timer: 1500,
+        showConfirmButton: false,
+      })
+    } catch {
+      Swal.fire('Error', 'No se pudo cancelar el turno.', 'error')
+    }
+  }
 }
 
 function insigniaEstado(estado: string) {

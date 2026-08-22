@@ -48,7 +48,7 @@ class MascotaViewSet(viewsets.ModelViewSet):
     - POST: Solo veterinarios/admins
     - PUT/PATCH/DELETE: Dueño o staff
 
-    SEGURIDAD: Clientes solo ven SUS mascotas.
+    Los clientes solo ven sus propias mascotas.
     """
     queryset = Mascota.objects.select_related('raza', 'raza__especie', 'usuario')
     permission_classes = [IsAuthenticated, CanManageMascota]
@@ -62,7 +62,7 @@ class MascotaViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         user = self.request.user
 
-        # SEGURIDAD: Si es cliente, solo ve SUS mascotas
+        # Si es cliente, solo ve sus mascotas
         if user.groups.filter(name="clientes").exists():
             queryset = queryset.filter(usuario=user)
 

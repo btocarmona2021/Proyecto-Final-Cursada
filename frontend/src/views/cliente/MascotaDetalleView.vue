@@ -138,14 +138,81 @@
         </div>
       </div>
 
-      <!-- Resumen simple clínico (placeholder) -->
-      <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-          <h6 class="fw-bold mb-2">Resumen clínico</h6>
-          <p class="text-muted mb-1" style="font-size: 13px">
-            En futuras versiones vas a poder ver el detalle de vacunas, consultas y
-            resultados clínicos directamente desde aquí.
-          </p>
+      <!-- Historial clínico -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-bold mb-2">Vacunas</h6>
+              <div
+                v-if="vacunasMascota.length === 0"
+                class="text-muted"
+                style="font-size: 13px"
+              >
+                Sin vacunas registradas.
+              </div>
+              <ul
+                v-else
+                class="list-group list-group-flush"
+                style="font-size: 13px"
+              >
+                <li
+                  v-for="v in vacunasMascota"
+                  :key="v.id"
+                  class="list-group-item px-0"
+                >
+                  <div class="d-flex justify-content-between">
+                    <span class="fw-semibold">{{ v.nombre }}</span>
+                    <span class="text-muted">
+                      {{ formatearFecha(v.fecha_aplicacion) }}
+                    </span>
+                  </div>
+                  <div v-if="v.fecha_proxima" class="text-muted">
+                    Próxima: {{ formatearFecha(v.fecha_proxima) }}
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-bold mb-2">Consultas</h6>
+              <div
+                v-if="consultasMascota.length === 0"
+                class="text-muted"
+                style="font-size: 13px"
+              >
+                Sin consultas registradas.
+              </div>
+              <ul
+                v-else
+                class="list-group list-group-flush"
+                style="font-size: 13px"
+              >
+                <li
+                  v-for="c in consultasMascota"
+                  :key="c.id"
+                  class="list-group-item px-0"
+                >
+                  <div class="d-flex justify-content-between">
+                    <span class="fw-semibold">{{ c.tipo_display }}</span>
+                    <span class="text-muted">
+                      {{ formatearFecha(c.fecha) }}
+                    </span>
+                  </div>
+                  <div v-if="c.diagnostico" class="text-muted">
+                    {{ c.diagnostico }}
+                  </div>
+                  <div v-if="c.veterinario_nombre" class="text-muted small">
+                    Dr/a: {{ c.veterinario_nombre }}
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -167,12 +234,18 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useTurnoStore } from '@/stores/turnoStore'
+import { useConsultaStore } from '@/stores/consultaStore'
+import { useVacunaStore } from '@/stores/vacunaStore'
 import type { Mascota } from '@/interfaces/mascotaInterface'
 import type { Turno } from '@/interfaces/turnoInterface'
+import type { ConsultaClinica } from '@/interfaces/consultaClinicaInterface'
+import type { Vacuna } from '@/interfaces/vacunaInterface'
 
 const route = useRoute()
 const mascotaStore = useMascotaStore()
 const turnoStore = useTurnoStore()
+const consultaStore = useConsultaStore()
+const vacunaStore = useVacunaStore()
 
 const cargando = ref(false)
 
@@ -184,6 +257,8 @@ onMounted(async () => {
     await Promise.all([
       mascotaStore.obtenerTodos(),
       turnoStore.obtenerTodos(),
+      consultaStore.obtenerTodos(),
+      vacunaStore.obtenerTodos(),
     ])
   } finally {
     cargando.value = false
@@ -204,6 +279,23 @@ const turnosMascota = computed<Turno[]>(() =>
       return new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime()
     }),
 )
+
+const consultasMascota = computed<ConsultaClinica[]>(() =>
+  consultaStore.consultas.filter((c) => c.mascota === idMascota.value),
+)
+
+const vacunasMascota = computed<Vacuna[]>(() =>
+  vacunaStore.vacunas.filter((v) => v.mascota === idMascota.value),
+)
+
+function formatearFecha(iso: string | null | undefined) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
 
 function emojiAvatar(especieNombre: string | null | undefined) {
   const lower = especieNombre?.toLowerCase() ?? ''
