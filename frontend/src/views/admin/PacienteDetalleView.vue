@@ -321,8 +321,10 @@ async function guardarVacuna() {
     await vacunaStore.obtenerTodos()
     obtenerModalVacuna().hide()
     Swal.fire({ icon: 'success', title: 'Vacuna registrada', timer: 1500, showConfirmButton: false })
-  } catch {
-    Swal.fire('Error', 'No se pudo registrar la vacuna.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo registrar la vacuna.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }

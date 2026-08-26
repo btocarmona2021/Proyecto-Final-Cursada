@@ -57,7 +57,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push(redireccionPorGrupo());
     } catch (e: unknown) {
-      error.value = 'Usuario o contraseña incorrectos';
+      const errorHttp = e as { response?: { status?: number } };
+      error.value =
+        errorHttp.response?.status === 429
+          ? 'Demasiados intentos. Esperá un momento y volvé a intentar.'
+          : 'Usuario o contraseña incorrectos';
       throw e;
     } finally {
       cargando.value = false;

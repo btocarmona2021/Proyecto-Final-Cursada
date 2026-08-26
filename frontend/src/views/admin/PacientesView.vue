@@ -276,8 +276,10 @@ async function guardar() {
     }
     await mascotaStore.obtenerTodos()
     obtenerModal().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar el paciente.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.nombre || data?.detail || data?.non_field_errors || 'No se pudo guardar el paciente.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }

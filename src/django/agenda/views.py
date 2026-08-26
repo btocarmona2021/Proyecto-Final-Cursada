@@ -10,7 +10,7 @@ from .serializers import (
     TurnoCreateSerializer,
     ServicioSerializer
 )
-from core.permissions import CanManageTurno, CanManageServicio, CanCancelTurno
+from core.permissions import CanManageTurno, CanManageServicio, CanCancelTurno, IsVeterinarioOrAdmin
 
 
 class ServicioViewSet(viewsets.ModelViewSet):
@@ -118,6 +118,15 @@ class TurnoViewSet(viewsets.ModelViewSet):
         """Cancela un turno. El cliente solo puede cancelar sus propios turnos."""
         turno = self.get_object()
         turno.estado = Turno.Estado.CANCELADO
+        turno.save()
+        serializer = TurnoSerializer(turno)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsVeterinarioOrAdmin])
+    def atender(self, request, pk=None):
+        """Marca el turno como atendido. Solo veterinarios y admins."""
+        turno = self.get_object()
+        turno.estado = Turno.Estado.ATENDIDO
         turno.save()
         serializer = TurnoSerializer(turno)
         return Response(serializer.data)

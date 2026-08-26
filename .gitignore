@@ -10,7 +10,6 @@ db.sqlite3
 /media/
 
 # Environment
-.env
 .env.user
 
 # Node
@@ -38,3 +37,4 @@ frontend/api.txt
 
 # Notas personales
 src/django/ReadmeProfesor.md
+pendientes-docker.md

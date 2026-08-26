@@ -21,6 +21,8 @@ api.interceptors.request.use(async (config) => {
 })
 
 // Interceptor de RESPONSE → maneja token expirado (401)
+let refrescoEnCurso: Promise<void> | null = null
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -42,11 +44,17 @@ api.interceptors.response.use(
       }
 
       try {
-        await authStore.refrescarToken()
+        // Si varios pedidos fallan a la vez, solo se hace UN refresh
+        if (!refrescoEnCurso) {
+          refrescoEnCurso = authStore.refrescarToken()
+        }
+        await refrescoEnCurso
+        refrescoEnCurso = null
         original.headers = original.headers ?? {}
         original.headers.Authorization = `Bearer ${authStore.tokenAcceso}`
         return api(original)
       } catch {
+        refrescoEnCurso = null
         authStore.cerrarSesion()
         return Promise.reject(error)
       }

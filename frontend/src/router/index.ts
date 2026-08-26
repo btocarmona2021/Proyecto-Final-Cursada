@@ -146,11 +146,7 @@ function destinoPorRol(to: RouteLocationNormalized, auth: ReturnType<typeof useA
       return { name: 'ClienteInicio' }
     }
 
-    if (rol === 'administradores' || rol === 'veterinarios') {
-      return { name: 'Dashboard' }
-    }
-
-    return { path: '/login' }
+    return { name: 'Dashboard' }
   }
 
   return true

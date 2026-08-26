@@ -10,3 +10,5 @@ GID=${GID_VAL}
 EOF
 
 echo "✓ Archivo .env.user generado exitosamente con UID=${UID_VAL} y GID=${GID_VAL}"
+
+docker compose --env-file .env --env-file .env.user up -d --build

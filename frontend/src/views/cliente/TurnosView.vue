@@ -251,8 +251,10 @@ async function cancelarTurno(t: Turno) {
         timer: 1500,
         showConfirmButton: false,
       })
-    } catch {
-      Swal.fire('Error', 'No se pudo cancelar el turno.', 'error')
+    } catch (error: unknown) {
+      const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+      const msg = String(data?.detail || data?.non_field_errors || 'No se pudo cancelar el turno.')
+      Swal.fire('Error', msg, 'error')
     }
   }
 }

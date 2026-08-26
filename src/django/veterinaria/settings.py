@@ -130,7 +130,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ),
     "DEFAULT_THROTTLE_RATES": {
-        "login": "5/min",
+        "login": "30/min",
     },
 }
 

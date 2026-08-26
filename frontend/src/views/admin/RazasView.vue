@@ -310,8 +310,10 @@ async function guardarEspecie() {
     }
     await especieStore.obtenerTodos()
     obtenerModalEspecie().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar la especie.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.nombre || data?.detail || data?.non_field_errors || 'No se pudo guardar la especie.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }
@@ -339,8 +341,10 @@ async function guardarRaza() {
     }
     await razaStore.obtenerTodos()
     obtenerModalRaza().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar la raza.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.nombre || data?.detail || data?.non_field_errors || 'No se pudo guardar la raza.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }

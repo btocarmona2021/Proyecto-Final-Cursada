@@ -105,12 +105,20 @@ class VeterinarioRegistroSerializer(serializers.ModelSerializer):
 # SERIALIZER PARA PERFIL USUARIO (edición)
 class PerfilUsuarioSerializer(serializers.ModelSerializer):
     usuario = UsuarioSerializer(read_only=True)
+    username = serializers.CharField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
     
     class Meta:
         model = PerfilUsuario
         fields = [
             "id",
             "usuario",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
             "telefono",
             "direccion",
             "foto",
@@ -123,6 +131,25 @@ class PerfilUsuarioSerializer(serializers.ModelSerializer):
             "fecha_creacion",
             "fecha_actualizacion",
         ]
+    
+    def update(self, instance, validated_data):
+        username = validated_data.pop('username', None)
+        first_name = validated_data.pop('first_name', None)
+        last_name = validated_data.pop('last_name', None)
+        email = validated_data.pop('email', None)
+        
+        user = instance.usuario
+        if username is not None:
+            user.username = username
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
+        if email is not None:
+            user.email = email
+        user.save()
+        
+        return super().update(instance, validated_data)
 
 
 # SERIALIZER PARA PERFIL DE VETERINARIO (edición)

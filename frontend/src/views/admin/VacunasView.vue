@@ -313,8 +313,10 @@ async function guardar() {
     }
     await vacunaStore.obtenerTodos()
     obtenerModal().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar la vacuna.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.nombre || data?.detail || data?.non_field_errors || 'No se pudo guardar la vacuna.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }

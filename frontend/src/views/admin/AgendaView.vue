@@ -83,6 +83,13 @@
               </td>
               <td>
                 <div class="d-flex gap-1">
+                  <button
+                    v-if="puedeAtender(turno)"
+                    class="btn btn-sm btn-success"
+                    @click="atenderTurno(turno)"
+                  >
+                    Atender
+                  </button>
                   <button class="btn btn-sm btn-outline-secondary" @click="abrirModalEditar(turno)">
                     Editar
                   </button>
@@ -203,6 +210,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
 import { useTurnoStore } from '@/stores/turnoStore'
@@ -216,6 +224,7 @@ const turnoStore = useTurnoStore()
 const mascotaStore = useMascotaStore()
 const servicioStore = useServicioStore()
 const veterinarioStore = useVeterinarioStore()
+const router = useRouter()
 
 const fechaSeleccionada = ref(obtenerFechaLocal())
 const filtroEstado = ref<string>('')
@@ -400,30 +409,40 @@ async function guardar() {
     })
     
   } catch (error: unknown) {
-    let mensajeError = 'No se pudo guardar el turno.'
-    
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { data?: Record<string, unknown> } }
-      if (axiosError.response?.data) {
-        const errores = axiosError.response.data
-        const mensajes = Object.entries(errores)
-          .map(([campo, msgs]) => {
-            const textos = Array.isArray(msgs) ? msgs.join(', ') : String(msgs)
-            return `<strong>${campo}:</strong> ${textos}`
-          })
-          .join('<br>')
-        
-        mensajeError = mensajes
-      }
-    }
-    
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar el turno.')
     Swal.fire({
       icon: 'error',
       title: 'Error al guardar',
-      html: mensajeError,
+      html: msg,
     })
   } finally {
     guardando.value = false
+  }
+}
+
+function puedeAtender(turno: Turno): boolean {
+  return turno.estado !== 'atendido' && turno.estado !== 'cancelado'
+}
+
+async function atenderTurno(turno: Turno) {
+  const resultado = await Swal.fire({
+    title: '¿Atender turno?',
+    text: `Registrar como atendido: ${turno.mascota_nombre} — ${formatearHora(turno.fecha_hora)}`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#198754',
+    cancelButtonText: 'Volver',
+    confirmButtonText: 'Sí, atender',
+  })
+
+  if (resultado.isConfirmed) {
+    await turnoStore.atender(turno.id)
+    await turnoStore.obtenerTodos()
+    router.push({
+      name: 'Historia',
+      query: { mascota: String(turno.mascota_id), turno: String(turno.id) },
+    })
   }
 }
 

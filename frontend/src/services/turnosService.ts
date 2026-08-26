@@ -31,6 +31,11 @@ const turnosService = {
     const response = await api.post<Turno>(`/turnos/${id}/cancelar/`)
     return response.data
   },
+
+  async atender(id: number): Promise<Turno> {
+    const response = await api.post<Turno>(`/turnos/${id}/atender/`)
+    return response.data
+  },
 }
 
 export default turnosService

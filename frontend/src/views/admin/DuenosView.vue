@@ -85,25 +85,25 @@
           </div>
 
           <div class="modal-body">
-            <div class="row">
+              <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Nombre</label>
-                <input type="text" class="form-control" v-model="form.first_name" :disabled="modoEdicion" />
+                <input type="text" class="form-control" v-model="form.first_name" />
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Apellido</label>
-                <input type="text" class="form-control" v-model="form.last_name" :disabled="modoEdicion" />
+                <input type="text" class="form-control" v-model="form.last_name" />
               </div>
             </div>
 
             <div class="mb-3">
               <label class="form-label fw-semibold">Username</label>
-              <input type="text" class="form-control" v-model="form.username" :disabled="modoEdicion" />
+              <input type="text" class="form-control" v-model="form.username" />
             </div>
 
             <div class="mb-3">
               <label class="form-label fw-semibold">Email</label>
-              <input type="email" class="form-control" v-model="form.email" :disabled="modoEdicion" />
+              <input type="email" class="form-control" v-model="form.email" />
             </div>
 
             <div class="mb-3" v-if="!modoEdicion">
@@ -255,6 +255,10 @@ async function guardar() {
 
       if (perfil) {
         await perfilClienteStore.actualizar(perfil.id, {
+          username: form.value.username,
+          first_name: form.value.first_name,
+          last_name: form.value.last_name,
+          email: form.value.email,
           telefono: form.value.telefono,
           direccion: form.value.direccion,
         })
@@ -288,8 +292,10 @@ async function guardar() {
     }
 
     obtenerModal().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar el dueño.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.username || data?.email || data?.detail || data?.non_field_errors || 'No se pudo guardar el dueño.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }

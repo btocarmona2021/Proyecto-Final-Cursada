@@ -98,6 +98,23 @@ export const useTurnoStore = defineStore('turno', () => {
     }
   }
 
+  const atender = async (id: number) => {
+    cargando.value = true
+    error.value = null
+    try {
+      const actualizado = await turnosService.atender(id)
+      const index = turnos.value.findIndex((t) => t.id === id)
+      if (index !== -1) {
+        turnos.value[index] = actualizado
+      }
+    } catch (e) {
+      error.value = 'Error al atender el turno'
+      throw e
+    } finally {
+      cargando.value = false
+    }
+  }
+
   return {
     turnos,
     turnoSeleccionado,
@@ -109,5 +126,6 @@ export const useTurnoStore = defineStore('turno', () => {
     actualizar,
     eliminar,
     cancelar,
+    atender,
   }
 })

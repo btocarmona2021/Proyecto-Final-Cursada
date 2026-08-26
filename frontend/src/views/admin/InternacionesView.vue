@@ -363,8 +363,10 @@ async function guardar() {
     }
     await internacionStore.obtenerTodos()
     obtenerModal().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar la internación.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar la internación.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }
@@ -382,8 +384,10 @@ async function guardarEvolucion() {
     await evolucionStore.obtenerTodos()
     Swal.fire({ icon: 'success', title: 'Evolución registrada', timer: 1500, showConfirmButton: false })
     obtenerModalNuevaEvolucion().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar la evolución.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar la evolución.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardandoEvolucion.value = false
   }

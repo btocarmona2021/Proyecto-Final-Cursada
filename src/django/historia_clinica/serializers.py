@@ -69,6 +69,16 @@ class ConsultaClinicaSerializer(serializers.ModelSerializer):
     def get_tipo_display(self, obj):
         return obj.get_tipo_display()
 
+    def validate(self, data):
+        turno = data.get("turno")
+        if turno:
+            mascota = data.get("mascota", getattr(self.instance, "mascota", None))
+            if mascota and turno.mascota_id != mascota.id:
+                raise serializers.ValidationError(
+                    {"turno": "El turno no pertenece a la mascota seleccionada."}
+                )
+        return data
+
 
 # SERIALIZER PARA VACUNA
 class VacunaSerializer(serializers.ModelSerializer):

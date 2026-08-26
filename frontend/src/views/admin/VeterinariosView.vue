@@ -421,8 +421,10 @@ async function guardarVeterinario() {
 
     await veterinarioStore.obtenerTodos()
     obtenerModalVeterinario().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar el veterinario.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.username || data?.email || data?.matricula || data?.detail || data?.non_field_errors || 'No se pudo guardar el veterinario.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
   }
@@ -446,8 +448,10 @@ async function guardarHorario() {
 
     await horarioStore.obtenerTodos()
     obtenerModalHorario().hide()
-  } catch {
-    Swal.fire('Error', 'No se pudo guardar el horario.', 'error')
+  } catch (error: unknown) {
+    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar el horario.')
+    Swal.fire('Error', msg, 'error')
   } finally {
     guardandoHorario.value = false
   }

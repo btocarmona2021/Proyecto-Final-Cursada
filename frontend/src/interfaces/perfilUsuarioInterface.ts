@@ -14,6 +14,10 @@ export interface PerfilUsuario {
 
 // Formulario para editar el perfil del usuario
 export interface PerfilUsuarioForm {
+  username?: string
+  first_name?: string
+  last_name?: string
+  email?: string
   telefono?: string
   direccion?: string
   foto?: File | null

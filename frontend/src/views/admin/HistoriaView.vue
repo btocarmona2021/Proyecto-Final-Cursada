@@ -183,6 +183,26 @@
                 </select>
               </div>
 
+              <div class="col-12">
+                <label class="form-label small fw-semibold">
+                  Turno asociado (opcional)
+                </label>
+                <select
+                  v-model="form.turno"
+                  class="form-select form-select-sm"
+                  @change="form.turno = form.turno || undefined"
+                >
+                  <option :value="0">Sin turno (consulta directa)</option>
+                  <option
+                    v-for="t in turnosMascota"
+                    :key="t.id"
+                    :value="t.id"
+                  >
+                    {{ formatearTurno(t) }}
+                  </option>
+                </select>
+              </div>
+
               <div class="col-12 col-md-4">
                 <label class="form-label small fw-semibold">Fecha</label>
                 <input
@@ -291,9 +311,11 @@ import Swal from 'sweetalert2'
 import { useConsultaStore } from '@/stores/consultaStore'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useVeterinarioStore } from '@/stores/veterinarioStore'
+import { useTurnoStore } from '@/stores/turnoStore'
 
 import type { Mascota } from '@/interfaces/mascotaInterface'
 import type { VeterinarioPerfil } from '@/interfaces/veterinarioPerfilInterface'
+import type { Turno } from '@/interfaces/turnoInterface'
 
 // OJO: ahora usamos el tipo que refleja la API real
 type ConsultaApi = {
@@ -327,6 +349,7 @@ const route = useRoute()
 const consultaStore = useConsultaStore()
 const mascotaStore = useMascotaStore()
 const veterinarioStore = useVeterinarioStore()
+const turnoStore = useTurnoStore()
 
 const busqueda = ref('')
 const filtros = ref<{
@@ -369,14 +392,24 @@ onMounted(async () => {
     consultaStore.obtenerTodos(),
     mascotaStore.obtenerTodos(),
     veterinarioStore.obtenerTodos(),
+    turnoStore.obtenerTodos(),
   ])
 
   const mascotaParam = route.query.mascota
+  const turnoParam = route.query.turno
+
+  if (mascotaParam && !Number.isNaN(Number(mascotaParam))) {
+    form.value.mascota = Number(mascotaParam)
+  }
+  if (turnoParam && !Number.isNaN(Number(turnoParam))) {
+    form.value.turno = Number(turnoParam)
+  }
+
+  // Si venimos del boton Atender, abrimos el modal precargado
   if (mascotaParam) {
-    const id = Number(mascotaParam)
-    if (!Number.isNaN(id)) {
-      form.value.mascota = id
-    }
+    abrirModalNueva()
+    form.value.mascota = Number(mascotaParam)
+    form.value.turno = turnoParam ? Number(turnoParam) : undefined
   }
 })
 
@@ -393,6 +426,38 @@ const mascotas = computed<Mascota[]>(() => mascotaStore.mascotas)
 const veterinarios = computed<VeterinarioPerfil[]>(
   () => veterinarioStore.veterinarios,
 )
+
+// Turnos que ya tienen una consulta vinculada (para no repetirlos)
+const turnosUsados = computed<Set<number>>(() => {
+  const ids = new Set<number>()
+  for (const c of consultas.value) {
+    if (c.turno) ids.add(c.turno)
+  }
+  return ids
+})
+
+// Turnos de la mascota elegida que todavia no tienen consulta
+const turnosMascota = computed<Turno[]>(() =>
+  turnoStore.turnos.filter(
+    (t) =>
+      t.mascota_id === form.value.mascota &&
+      t.estado !== 'cancelado' &&
+      !turnosUsados.value.has(t.id),
+  ),
+)
+
+function formatearTurno(t: Turno): string {
+  const fecha = new Date(t.fecha_hora)
+  const fechaStr = fecha.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+  })
+  const horaStr = fecha.toLocaleTimeString('es-AR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  return `${fechaStr} ${horaStr} · ${t.servicio_nombre}`
+}
 
 const consultasFiltradas = computed<ConsultaApi[]>(() => {
   const term = busqueda.value.trim().toLowerCase()
@@ -516,6 +581,7 @@ async function guardar() {
   const payload: ConsultaClinicaForm = {
     ...form.value,
     veterinario: form.value.veterinario || undefined,
+    turno: form.value.turno || undefined,
   }
 
   try {
@@ -531,12 +597,10 @@ async function guardar() {
 
     await consultaStore.obtenerTodos()
     obtenerModal().hide()
-  } catch (e) {
-    await Swal.fire(
-      'Error',
-      'No se pudo guardar la consulta clínica.',
-      'error',
-    )
+  } catch (e: unknown) {
+    const data = (e as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar la consulta clínica.')
+    await Swal.fire('Error', msg, 'error')
     throw e
   } finally {
     guardando.value = false
