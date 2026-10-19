@@ -38,3 +38,5 @@ frontend/api.txt
 # Notas personales
 src/django/ReadmeProfesor.md
 pendientes-docker.md
+
+/.env

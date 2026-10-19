@@ -169,7 +169,7 @@ onMounted(async () => {
   cargandoClinica.value = true
   try {
     const datos = await veterinariaService.obtenerTodos()
-    clinica.value = datos.length > 0 ? datos[0] : null
+    clinica.value = datos[0] ?? null
   } catch {
     clinica.value = null
   } finally {

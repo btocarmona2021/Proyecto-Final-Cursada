@@ -58,12 +58,22 @@ class TurnoCreateSerializer(serializers.ModelSerializer):
         servicio = data.get("servicio", getattr(self.instance, "servicio", None))
         urgencia = data.get("urgencia", getattr(self.instance, "urgencia", False))
 
+        es_nuevo = self.instance is None
+        cambio_fecha = (
+            self.instance is not None and fecha_hora != self.instance.fecha_hora
+        )
+
+        if fecha_hora is not None and (es_nuevo or cambio_fecha):
+            if fecha_hora <= timezone.now():
+                raise serializers.ValidationError(
+                    {"fecha_hora": "La fecha y hora del turno deben ser futuras."}
+                )
+
         # Si falta alguno de los datos necesarios para validar (veterinario, fecha_hora o servicio),
         # no hago la validación de solapamiento.
         if not veterinario or not fecha_hora or not servicio:
             return data
-        # Si el turno es de urgencia, no hago la validación de solapamiento,
-        # ya que los turnos de urgencia pueden solaparse.
+        # Las urgencias pueden atenderse fuera del horario y solaparse.
         if urgencia:
             return data
         # Si es una actualización, comparo la nueva fecha_hora, veterinario y servicio con los valores anteriores.
@@ -90,6 +100,21 @@ class TurnoCreateSerializer(serializers.ModelSerializer):
 
         duracion = timedelta(minutes=servicio.duracion_estimada)
         fecha_hora_fin = fecha_hora + duracion
+        # Verifico que el horario del veterinario cubra el turno completo.
+        inicio_local = timezone.localtime(fecha_hora)
+        fin_local = timezone.localtime(fecha_hora_fin)
+
+        horario_valido = veterinario.horarios.filter(
+            activo=True,
+            dia_semana=inicio_local.isoweekday(),
+            hora_inicio__lte=inicio_local.time(),
+            hora_fin__gte=fin_local.time(),
+        ).exists()
+
+        if inicio_local.date() != fin_local.date() or not horario_valido:
+            raise serializers.ValidationError({
+                "fecha_hora": "El veterinario no atiende en ese día y horario."
+            })
         # Busco turnos del mismo veterinario que se solapen con el nuevo turno, excluyendo los turnos de urgencia.
         turnos_conflicto = (
             Turno.objects.filter(
@@ -113,7 +138,7 @@ class TurnoCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-# SERIALIZER PARA EL MODELO DE TURNO CON INFORMACIÓN RELACIONADA DE MASCOTA, 
+# SERIALIZER PARA EL MODELO DE TURNO CON INFORMACIÓN RELACIONADA DE MASCOTA,
 # VETERINARIO Y SERVICIO, Y CAMPOS CALCULADOS COMO NOMBRES Y HORA DE FIN ESTIMADA.
 class TurnoSerializer(serializers.ModelSerializer):
     # Traigo información relacionada de la mascota, veterinario y servicio utilizando serializers anidados y campos fuente para mostrar nombres e información detallada sin necesidad de hacer consultas adicionales en el frontend.

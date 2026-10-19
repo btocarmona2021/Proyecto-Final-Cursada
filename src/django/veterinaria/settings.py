@@ -5,10 +5,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-vrf+t%s(@p0+@phoizqxav&s__u91c$_&5kw%gf9%6*j)1bqb-",
-)
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 
 DEBUG = os.environ.get("DEBUG", "0") == "1"
