@@ -24,6 +24,19 @@ services:
     networks:
       - redproyecto
 
+  frontend:
+    build: ./frontend
+    image: frontendveterinaria:${APP_VERSION}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backendveterinaria
+    networks:
+      - redproyecto
+
 
   db:
     image: postgres:15-alpine

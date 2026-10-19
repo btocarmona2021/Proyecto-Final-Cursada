@@ -1,7 +1,7 @@
 # agenda/views.py (turnos)
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from .models import Turno, Servicio
@@ -22,6 +22,11 @@ class ServicioViewSet(viewsets.ModelViewSet):
     queryset = Servicio.objects.filter(activo=True)
     serializer_class = ServicioSerializer
     permission_classes = [IsAuthenticated, CanManageServicio]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated(), CanManageServicio()]
 
 
 class TurnoViewSet(viewsets.ModelViewSet):

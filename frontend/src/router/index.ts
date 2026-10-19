@@ -4,6 +4,12 @@ import { useAuthStore } from '@/stores/authStore'
 
 const routes = [
   {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/publica/HomeView.vue'),
+  },
+
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/auth/LoginView.vue'),
@@ -130,7 +136,7 @@ const routes = [
     ],
   },
 
-  { path: '/:pathMatch(.*)*', redirect: '/login' },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
 const router = createRouter({

@@ -12,22 +12,17 @@ from .serializers import (
     VeterinarioPerfilSerializer,
     HorarioVeterinarioSerializer,
 )
-from core.permissions import IsAdminUser, IsVeterinarioOrAdmin
+from core.permissions import IsAdminUser, IsVeterinarioOrAdmin ,CanManageVeterinarioPerfil,CanManageClientePerfil
 
 
 class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Listado de usuarios.
-    Solo los administradores pueden eliminar.
+    Solo los administradores autenticados pueden listar,
+    consultar y eliminar usuarios.
     """
     queryset = User.objects.all()
     serializer_class = UsuarioSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_permissions(self):
-        if self.action == 'destroy':
-            return [IsAdminUser()]
-        return super().get_permissions()
+    permission_classes = [IsAuthenticated,IsAdminUser]
 
     def destroy(self, request, *args, **kwargs):
         usuario = self.get_object()
@@ -38,11 +33,24 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     Registro y gestión de clientes.
-    - POST (create): Público (registro abierto)
-    - GET/PUT/PATCH/DELETE: Requiere autenticación
+    - Registro: público.
+    - Las demás operaciones requieren autenticación.
+    - Administradores: consultan, editan y eliminan cualquier perfil.
+    - Veterinarios: consultan todos los perfiles.
+    - Clientes: consultan y editan únicamente su propio perfil.
     """
     queryset = PerfilUsuario.objects.all()
     serializer_class = PerfilUsuarioSerializer
+
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff or user.groups.filter(name='veterinarios').exists():
+            # Veterinario/Admin puede ver todos los clientes
+            return PerfilUsuario.objects.all()
+
+        return PerfilUsuario.objects.filter(usuario=user)  # Cliente solo su propio perfil
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -52,7 +60,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), CanManageClientePerfil()]
 
     def create(self, request, *args, **kwargs):
         serializer = ClienteRegistroSerializer(data=request.data)
@@ -67,21 +75,17 @@ class ClienteViewSet(viewsets.ModelViewSet):
 class VeterinarioViewSet(viewsets.ModelViewSet):
     """
     Registro y gestión de veterinarios.
-    - POST (create): Solo administradores
-    - GET/PUT/PATCH/DELETE: Requiere autenticación
+    - Consulta: usuarios autenticados.
+    - Creación, edición y eliminación: solo administradores.
     """
     queryset = VeterinarioPerfil.objects.all()
     serializer_class = VeterinarioPerfilSerializer
+    permission_classes = [IsAuthenticated, CanManageVeterinarioPerfil]  
 
     def get_serializer_class(self):
         if self.action == 'create':
             return VeterinarioRegistroSerializer
         return VeterinarioPerfilSerializer
-
-    def get_permissions(self):
-        if self.action == 'create':
-            return [IsAdminUser()]
-        return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
         serializer = VeterinarioRegistroSerializer(data=request.data)

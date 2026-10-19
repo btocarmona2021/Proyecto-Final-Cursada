@@ -1,6 +1,6 @@
 # clinica/views.py
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Veterinaria
 from .serializers import VeterinariaSerializer
 from core.permissions import IsAdminUser
@@ -17,5 +17,5 @@ class VeterinariaViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
+            return [AllowAny()]
         return [IsAuthenticated(), IsAdminUser()]

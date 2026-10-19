@@ -4,21 +4,25 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 # PERMISOS GENERALES POR ROL
 # ============================================================================
 
+
 class IsCliente(BasePermission):
     """
     Permiso: El usuario pertenece al grupo 'clientes'
     Uso: Para endpoints exclusivos de clientes
     """
+
     def has_permission(self, request, view):
-        return request.user.groups.filter(name='clientes').exists()
+        return request.user.groups.filter(name="clientes").exists()
+
 
 class IsVeterinario(BasePermission):
     """
     Permiso: El usuario pertenece al grupo 'veterinarios'
     Uso: Para endpoints exclusivos de veterinarios
     """
+
     def has_permission(self, request, view):
-        return request.user.groups.filter(name='veterinarios').exists()
+        return request.user.groups.filter(name="veterinarios").exists()
 
 
 class IsVeterinarioOrAdmin(BasePermission):
@@ -26,12 +30,10 @@ class IsVeterinarioOrAdmin(BasePermission):
     Permiso: El usuario es veterinario o admin
     Uso: Para operaciones que requieren staff médico
     """
+
     def has_permission(self, request, view):
         user = request.user
-        return (
-            user.is_staff or 
-            user.groups.filter(name='veterinarios').exists()
-        )
+        return user.is_staff or user.groups.filter(name="veterinarios").exists()
 
 
 class IsAdminUser(BasePermission):
@@ -39,6 +41,7 @@ class IsAdminUser(BasePermission):
     Permiso: El usuario es administrador
     Uso: Para configuraciones del sistema
     """
+
     def has_permission(self, request, view):
         return request.user.is_staff
 
@@ -48,6 +51,7 @@ class ReadOnly(BasePermission):
     Permiso: Solo lectura (GET, HEAD, OPTIONS)
     Uso: Para endpoints públicos o de consulta
     """
+
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS
 
@@ -55,6 +59,7 @@ class ReadOnly(BasePermission):
 # ============================================================================
 # PERMISOS ESPECÍFICOS PARA MASCOTAS
 # ============================================================================
+
 
 class CanManageMascota(BasePermission):
 
@@ -65,12 +70,9 @@ class CanManageMascota(BasePermission):
             return True
 
         # POST solo para veterinarios/admins
-        if request.method == 'POST':
+        if request.method == "POST":
             user = request.user
-            return (
-                user.is_staff or 
-                user.groups.filter(name='veterinarios').exists()
-            )
+            return user.is_staff or user.groups.filter(name="veterinarios").exists()
 
         # PUT/PATCH/DELETE validados en has_object_permission
         return True
@@ -84,7 +86,7 @@ class CanManageMascota(BasePermission):
             return True
 
         # Veterinario/Admin puede todo
-        if user.is_staff or user.groups.filter(name='veterinarios').exists():
+        if user.is_staff or user.groups.filter(name="veterinarios").exists():
             return True
 
         # Cliente solo SUS mascotas
@@ -94,6 +96,7 @@ class CanManageMascota(BasePermission):
 # ============================================================================
 # PERMISOS ESPECÍFICOS PARA TURNOS
 # ============================================================================
+
 
 class CanManageTurno(BasePermission):
     """
@@ -109,15 +112,12 @@ class CanManageTurno(BasePermission):
     def has_permission(self, request, view):
         """Validación a nivel de endpoint"""
         # GET y POST permitidos (validaciones específicas después)
-        if request.method in ['GET', 'POST']:
+        if request.method in ["GET", "POST"]:
             return True
 
         # PUT/PATCH/DELETE solo para veterinarios/admins
         user = request.user
-        return (
-            user.is_staff or 
-            user.groups.filter(name='veterinarios').exists()
-        )
+        return user.is_staff or user.groups.filter(name="veterinarios").exists()
 
     def has_object_permission(self, request, view, obj):
         """Validación a nivel de objeto"""
@@ -128,7 +128,7 @@ class CanManageTurno(BasePermission):
             return True
 
         # Veterinario/Admin puede editar/eliminar
-        if user.is_staff or user.groups.filter(name='veterinarios').exists():
+        if user.is_staff or user.groups.filter(name="veterinarios").exists():
             return True
 
         # Clientes no pueden editar/eliminar (solo cancelar)
@@ -149,11 +149,11 @@ class CanCancelTurno(BasePermission):
         user = request.user
 
         # Veterinario/Admin puede cancelar cualquiera
-        if user.is_staff or user.groups.filter(name='veterinarios').exists():
+        if user.is_staff or user.groups.filter(name="veterinarios").exists():
             return True
 
         # Cliente solo SUS turnos
-        if user.groups.filter(name='clientes').exists():
+        if user.groups.filter(name="clientes").exists():
             return obj.mascota.usuario == user
 
         return False
@@ -162,6 +162,7 @@ class CanCancelTurno(BasePermission):
 # ============================================================================
 # PERMISOS ESPECÍFICOS PARA ESPECIES Y RAZAS
 # ============================================================================
+
 
 class CanManageEspecieRaza(BasePermission):
     """
@@ -186,6 +187,7 @@ class CanManageEspecieRaza(BasePermission):
 # PERMISOS ESPECÍFICOS PARA SERVICIOS
 # ============================================================================
 
+
 class CanManageServicio(BasePermission):
     """
     Permisos para gestionar servicios:
@@ -209,18 +211,17 @@ class CanManageServicio(BasePermission):
 # PERMISOS ESPECÍFICOS PARA VETERINARIOS
 # ============================================================================
 
+
 class CanManageVeterinarioPerfil(BasePermission):
     """
     Permisos para gestionar perfiles de veterinarios:
     - GET: Todos (para ver disponibilidad)
     - POST/PUT/PATCH/DELETE: Solo admins
-
-    Uso: permission_classes = [IsAuthenticated, CanManageVeterinarioPerfil]
     """
 
     def has_permission(self, request, view):
         """Validación a nivel de endpoint"""
-        # GET permitido para todos
+        # GET permitido para todos los que esten autenticados
         if request.method in SAFE_METHODS:
             return True
 
@@ -231,6 +232,7 @@ class CanManageVeterinarioPerfil(BasePermission):
 # ============================================================================
 # PERMISOS GENÉRICOS REUTILIZABLES
 # ============================================================================
+
 
 class IsOwnerOrReadOnly(BasePermission):
     """
@@ -253,7 +255,7 @@ class IsOwnerOrReadOnly(BasePermission):
             return True
 
         # Dueño puede editar
-        if hasattr(obj, 'usuario'):
+        if hasattr(obj, "usuario"):
             return obj.usuario == request.user
 
         # Si no tiene campo usuario, denegar
@@ -275,13 +277,13 @@ class IsOwnerOrStaff(BasePermission):
         user = request.user
 
         # Staff puede todo
-        if user.is_staff or user.groups.filter(name='veterinarios').exists():
+        if user.is_staff or user.groups.filter(name="veterinarios").exists():
             return True
 
         # Validar según el tipo de objeto
-        if hasattr(obj, 'usuario'):  # Mascota, etc.
+        if hasattr(obj, "usuario"):  # Mascota, etc.
             return obj.usuario == user
-        elif hasattr(obj, 'mascota'):  # Turno, HistorialMedico, etc.
+        elif hasattr(obj, "mascota"):  # Turno, HistorialMedico, etc.
             return obj.mascota.usuario == user
 
         return False
@@ -291,16 +293,33 @@ class IsOwnerOrStaff(BasePermission):
 # HELPERS
 # ============================================================================
 
+
 def is_cliente(user):
     """Helper para verificar si un usuario es cliente"""
-    return user.groups.filter(name='clientes').exists()
+    return user.groups.filter(name="clientes").exists()
 
 
 def is_veterinario(user):
     """Helper para verificar si un usuario es veterinario"""
-    return user.groups.filter(name='veterinarios').exists()
+    return user.groups.filter(name="veterinarios").exists()
 
 
 def is_staff_or_vet(user):
     """Helper para verificar si un usuario es staff o veterinario"""
-    return user.is_staff or user.groups.filter(name='veterinarios').exists()
+    return user.is_staff or user.groups.filter(name="veterinarios").exists()
+
+
+class CanManageClientePerfil(BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "DELETE":
+            return request.user.is_staff
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_staff:
+            return True
+
+        if request.method in SAFE_METHODS:
+            return True
+
+        return obj.usuario_id == request.user.id
