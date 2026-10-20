@@ -167,7 +167,6 @@ const form = ref<RegistroClienteForm>(formularioVacio())
 
 onMounted(async () => {
   await Promise.all([
-    usuarioStore.obtenerTodos(),
     perfilClienteStore.obtenerTodos(),
     mascotaStore.obtenerTodos(),
   ])
@@ -178,7 +177,7 @@ const cargandoVista = computed(() =>
 )
 
 const soloClientes = computed(() =>
-  usuarioStore.usuarios.filter((u: UsuarioAuth) => u.grupo === 'clientes')
+  perfilClienteStore.perfiles.map((perfil) => perfil.usuario)
 )
 
 const duenosFiltrados = computed(() =>
@@ -264,10 +263,7 @@ async function guardar() {
         })
       }
 
-      await Promise.all([
-        usuarioStore.obtenerTodos(),
-        perfilClienteStore.obtenerTodos(),
-      ])
+      await perfilClienteStore.obtenerTodos()
 
       Swal.fire({
         icon: 'success',
@@ -278,10 +274,7 @@ async function guardar() {
     } else {
       await perfilClienteStore.crear(form.value)
 
-      await Promise.all([
-        usuarioStore.obtenerTodos(),
-        perfilClienteStore.obtenerTodos(),
-      ])
+      await perfilClienteStore.obtenerTodos()
 
       Swal.fire({
         icon: 'success',
@@ -314,10 +307,7 @@ async function confirmarEliminar(u: UsuarioAuth) {
 
   if (result.isConfirmed) {
     await usuarioStore.eliminar(u.id)
-    await Promise.all([
-      usuarioStore.obtenerTodos(),
-      perfilClienteStore.obtenerTodos(),
-    ])
+    await perfilClienteStore.obtenerTodos()
     Swal.fire({
       icon: 'success',
       title: 'Dueño eliminado',

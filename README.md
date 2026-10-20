@@ -52,6 +52,36 @@ Para comprobar TypeScript y compilar el frontend para producción:
 docker compose --env-file .env --env-file .env.user exec frontend npm run build
 ```
 
+## Datos de demostración
+
+Después de aplicar las migraciones, se pueden cargar datos ficticios:
+
+```bash
+docker compose --env-file .env --env-file .env.user exec backendveterinaria python manage.py cargar_demo
+```
+
+La lógica está en `src/django/utils/datos_demo.py`. Crea una clínica si no existe, tres especies, seis razas, cuatro servicios, un veterinario con once franjas de atención, tres clientes con mascotas, cinco turnos, dos consultas con recetas, tres vacunas, dos internaciones con evoluciones y tres notificaciones.
+
+| Rol | Usuario | Contraseña inicial |
+|---|---|---|
+| Administrador | `demo.admin` | `DemoAdmin123!` |
+| Veterinario | `demo.veterinario` | `DemoVet123!` |
+| Cliente | `demo.cliente1` | `DemoCliente123!` |
+| Cliente | `demo.cliente2` | `DemoCliente123!` |
+| Cliente | `demo.cliente3` | `DemoCliente123!` |
+
+Estas cuentas son únicamente para demostración. El comando no se ejecuta automáticamente al arrancar. Repetirlo no duplica los registros creados ni restablece contraseñas. Las fechas se calculan al crear cada registro: los próximos turnos quedan para el siguiente día de lunes a viernes. Repetir la carga no reprograma los turnos existentes. Una clínica ya configurada se conserva. Si un nombre de cuenta de demostración ya pertenece a una cuenta con otra configuración, la carga se cancela sin guardar cambios.
+
+### Vaciar los datos
+
+Para eliminar todos los datos de la aplicación y conservar únicamente una cuenta administradora, reemplazar `NOMBRE_ADMIN` por su nombre de usuario:
+
+```bash
+docker compose --env-file .env --env-file .env.user exec backendveterinaria python manage.py vaciar_datos --administrador NOMBRE_ADMIN --confirmar
+```
+
+Esta operación elimina también los demás administradores, clientes, mascotas, turnos, historias clínicas, catálogos y datos de la clínica. Conserva la cuenta indicada, su contraseña y sus grupos, además de la estructura de la base y los permisos internos de Django. Limpia sesiones, registros de tokens y el historial del panel de administración. No elimina archivos del directorio `media`. Sin `--confirmar`, o si la cuenta indicada no es un administrador activo, no se ejecuta la eliminación. La operación se realiza en una transacción.
+
 ## Tecnologias usadas
 
 - Backend: Django + Django REST Framework + Simple JWT
