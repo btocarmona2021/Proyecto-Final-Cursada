@@ -15,6 +15,6 @@ export interface RecetaItemForm {
   medicamento: string
   dosis: string
   frecuencia?: string
-  dias?: number
+  dias?: number | null
   indicaciones?: string
 }

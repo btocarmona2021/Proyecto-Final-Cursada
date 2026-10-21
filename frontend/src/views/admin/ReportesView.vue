@@ -35,6 +35,9 @@
       </div>
     </div>
 
+    <div v-if="errorCarga" class="alert alert-danger">{{ errorCarga }}</div>
+    <div v-if="errorFiltros" class="alert alert-warning">{{ errorFiltros }}</div>
+
     <!-- KPIs -->
     <div class="row g-3 mb-4">
       <div class="col-md-3">
@@ -64,8 +67,8 @@
       <div class="col-md-3">
         <div class="card border-0 shadow-sm text-center">
           <div class="card-body">
-            <div class="text-muted small mb-1">Tasa ocupación</div>
-            <div class="fs-3 fw-bold text-warning">{{ estadisticas.tasaOcupacion }}%</div>
+            <div class="text-muted small mb-1">Turnos atendidos (%)</div>
+            <div class="fs-3 fw-bold text-warning">{{ estadisticas.porcentajeAtendidos }}%</div>
           </div>
         </div>
       </div>
@@ -89,7 +92,7 @@
       <div class="col-md-6">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <span class="fw-semibold">Evolución de turnos (últimos 6 meses)</span>
+            <span class="fw-semibold">Evolución mensual de turnos del período</span>
           </div>
           <div class="card-body" style="height: 300px">
             <v-chart :option="chartEvolucion" autoresize style="height: 100%" />
@@ -115,7 +118,7 @@
       <div class="col-md-6">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <span class="fw-semibold">Top 10 razas más atendidas</span>
+            <span class="fw-semibold">Top 10 razas por consultas realizadas</span>
           </div>
           <div class="card-body" style="height: 300px">
             <v-chart :option="chartRazas" autoresize style="height: 100%" />
@@ -128,9 +131,6 @@
     <div class="card border-0 shadow-sm">
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <span class="fw-semibold">Detalle de turnos</span>
-        <button class="btn btn-sm btn-outline-success">
-          📥 Exportar Excel
-        </button>
       </div>
       <div class="card-body p-0">
         <div v-if="cargando" class="text-center text-muted py-5">
@@ -171,50 +171,72 @@
 </template>
 
 <script setup lang="ts">
+import { fechaDesdeAPI, fechaParaFormulario } from '@/utils/fechas'
 import { ref, computed, onMounted } from 'vue'
 import { useTurnoStore } from '@/stores/turnoStore'
 import { useVeterinarioStore } from '@/stores/veterinarioStore'
 import { useMascotaStore } from '@/stores/mascotaStore'
+import { useConsultaStore } from '@/stores/consultaStore'
 import type { EstadoTurno } from '@/interfaces/turnoInterface'
 
 const turnoStore = useTurnoStore()
 const veterinarioStore = useVeterinarioStore()
 const mascotaStore = useMascotaStore()
+const consultaStore = useConsultaStore()
 
-const cargando = ref(false)
+const cargando = ref(true)
+const errorCarga = ref('')
+const errorFiltros = ref('')
 
 const filtros = ref({
-  fechaDesde: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10),
-  fechaHasta: new Date().toISOString().slice(0, 10),
+  fechaDesde: fechaParaFormulario(new Date(new Date().getFullYear(), new Date().getMonth(), 1)),
+  fechaHasta: fechaParaFormulario(),
   veterinario: '',
 })
 
-const estadisticas = ref({
-  totalTurnos: 0,
-  pacientesAtendidos: 0,
-  totalConsultas: 0,
-  tasaOcupacion: 0,
-})
+const filtrosAplicados = ref({ ...filtros.value })
 
 onMounted(async () => {
-  await Promise.all([
-    turnoStore.obtenerTodos(),
-    veterinarioStore.obtenerTodos(),
-    mascotaStore.obtenerTodos(),
-  ])
-  cargarReportes()
+  try {
+    await Promise.all([
+      turnoStore.obtenerTodos(),
+      veterinarioStore.obtenerTodos(),
+      mascotaStore.obtenerTodos(),
+      consultaStore.obtenerTodos(),
+    ])
+  } catch {
+    errorCarga.value = 'No se pudieron cargar todos los datos del reporte. Intentá nuevamente.'
+  } finally {
+    cargando.value = false
+  }
 })
 
 const veterinarios = computed(() => veterinarioStore.veterinarios)
 
 const turnos = computed(() => {
   return turnoStore.turnos.filter(t => {
-    const fecha = t.fecha_hora.slice(0, 10)
-    const cumpleFecha = fecha >= filtros.value.fechaDesde && fecha <= filtros.value.fechaHasta
-    const cumpleVet = !filtros.value.veterinario || t.veterinario_id === Number(filtros.value.veterinario)
+    const fecha = fechaParaFormulario(fechaDesdeAPI(t.fecha_hora))
+    const cumpleFecha = fecha >= filtrosAplicados.value.fechaDesde && fecha <= filtrosAplicados.value.fechaHasta
+    const cumpleVet = !filtrosAplicados.value.veterinario || t.veterinario_id === Number(filtrosAplicados.value.veterinario)
     return cumpleFecha && cumpleVet
   })
 })
+
+const consultas = computed(() => consultaStore.consultas.filter((consulta) => {
+  const fecha = fechaParaFormulario(fechaDesdeAPI(consulta.fecha))
+  const cumpleFecha = fecha >= filtrosAplicados.value.fechaDesde && fecha <= filtrosAplicados.value.fechaHasta
+  const cumpleVet = !filtrosAplicados.value.veterinario || consulta.veterinario === Number(filtrosAplicados.value.veterinario)
+  return cumpleFecha && cumpleVet
+}))
+
+const estadisticas = computed(() => ({
+  totalTurnos: turnos.value.length,
+  pacientesAtendidos: new Set(consultas.value.map((consulta) => consulta.mascota)).size,
+  totalConsultas: consultas.value.length,
+  porcentajeAtendidos: turnos.value.length
+    ? Math.round(turnos.value.filter((turno) => turno.estado === 'atendido').length / turnos.value.length * 100)
+    : 0,
+}))
 
 // Gráfico: Turnos por estado (Pie)
 const chartTurnosPorEstado = computed(() => {
@@ -265,7 +287,7 @@ const chartEvolucion = computed(() => {
   const meses: Record<string, number> = {}
   
   turnos.value.forEach(t => {
-    const mes = t.fecha_hora.slice(0, 7)
+    const mes = fechaParaFormulario(fechaDesdeAPI(t.fecha_hora)).slice(0, 7)
     meses[mes] = (meses[mes] || 0) + 1
   })
 
@@ -346,8 +368,8 @@ const chartServicios = computed(() => {
 const chartRazas = computed(() => {
   const razaCount: Record<string, number> = {}
   
-  turnos.value.forEach(t => {
-    const mascota = mascotaStore.mascotas.find(m => m.id === t.mascota_id)
+  consultas.value.forEach(consulta => {
+    const mascota = mascotaStore.mascotas.find(m => m.id === consulta.mascota)
     if (mascota?.raza_nombre) {
       razaCount[mascota.raza_nombre] = (razaCount[mascota.raza_nombre] || 0) + 1
     }
@@ -388,25 +410,12 @@ const chartRazas = computed(() => {
 })
 
 function cargarReportes() {
-  cargando.value = true
-  
-  const turnosFiltrados = turnos.value
-  estadisticas.value.totalTurnos = turnosFiltrados.length
-  
-  const mascotasUnicas = new Set(turnosFiltrados.map(t => t.mascota_id))
-  estadisticas.value.pacientesAtendidos = mascotasUnicas.size
-  
-  estadisticas.value.totalConsultas = turnosFiltrados.filter(t => 
-    t.estado === 'atendido' || t.estado === 'en_consulta'
-  ).length
-  
-  estadisticas.value.tasaOcupacion = turnosFiltrados.length > 0
-    ? Math.round((estadisticas.value.totalConsultas / turnosFiltrados.length) * 100)
-    : 0
-
-  setTimeout(() => {
-    cargando.value = false
-  }, 500)
+  if (!filtros.value.fechaDesde || !filtros.value.fechaHasta || filtros.value.fechaDesde > filtros.value.fechaHasta) {
+    errorFiltros.value = 'Seleccioná un período válido: la fecha desde no puede ser posterior a la fecha hasta.'
+    return
+  }
+  errorFiltros.value = ''
+  filtrosAplicados.value = { ...filtros.value }
 }
 
 function formatearFecha(fecha: string) {

@@ -6,7 +6,7 @@ export interface UsuarioAuth {
   first_name: string
   last_name: string
   email: string
-  grupo: string | null  // nombre del grupo principal
+  grupo: string | null
 }
 
 export interface FormularioInicioSesion {
@@ -17,6 +17,7 @@ export interface FormularioInicioSesion {
 export interface RespuestaToken {
   access: string
   refresh: string
+  grupo?: string | null
 }
 
 export type Usuario = UsuarioAuth

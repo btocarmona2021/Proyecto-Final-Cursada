@@ -27,7 +27,7 @@
           <div class="text-muted" style="font-size: 11px">Elegí con quién es el turno</div>
         </div>
       </div>
-      <div class="flex-grow-1 border-top mx-2" style="border-style: dashed !important;"></div>
+      <div class="flex-grow-1 border-top mx-2" style="border-style: dashed !important"></div>
       <div class="d-flex align-items-center gap-2">
         <div :class="['step-dot', pasoActual >= 2 ? 'active' : '']">2</div>
         <div>
@@ -35,7 +35,7 @@
           <div class="text-muted" style="font-size: 11px">Tipo de consulta o servicio</div>
         </div>
       </div>
-      <div class="flex-grow-1 border-top mx-2" style="border-style: dashed !important;"></div>
+      <div class="flex-grow-1 border-top mx-2" style="border-style: dashed !important"></div>
       <div class="d-flex align-items-center gap-2">
         <div :class="['step-dot', pasoActual >= 3 ? 'active' : '']">3</div>
         <div>
@@ -59,22 +59,27 @@
         </div>
 
         <div v-else class="row g-2">
-          <div
-            v-for="m in mascotas"
-            :key="m.id"
-            class="col-12"
-          >
+          <div v-for="m in mascotas" :key="m.id" class="col-12">
             <button
               type="button"
               class="w-100 text-start btn btn-light d-flex align-items-center p-2 rounded-3 border"
-              :class="form.mascota === m.id ? 'border-success bg-success bg-opacity-10' : 'border-light'"
+              :class="
+                form.mascota === m.id ? 'border-success bg-success bg-opacity-10' : 'border-light'
+              "
               @click="seleccionarMascota(m.id)"
             >
               <div
                 class="rounded-circle d-flex align-items-center justify-content-center me-3"
                 style="width: 44px; height: 44px; background: #e7f5ff"
               >
-                <span style="font-size: 1.4rem">
+                <img
+                  v-if="m.foto"
+                  :src="urlImagen(m.foto)"
+                  :alt="m.nombre"
+                  class="rounded-circle"
+                  style="width: 100%; height: 100%; object-fit: cover"
+                />
+                <span v-else style="font-size: 1.4rem">
                   {{ emojiAvatar(m.especie_nombre) }}
                 </span>
               </div>
@@ -90,11 +95,7 @@
                 </div>
               </div>
               <div>
-                <span
-                  v-if="form.mascota === m.id"
-                  class="badge bg-success"
-                  style="font-size: 11px"
-                >
+                <span v-if="form.mascota === m.id" class="badge bg-success" style="font-size: 11px">
                   Seleccionada
                 </span>
               </div>
@@ -114,16 +115,9 @@
 
         <div class="mb-3">
           <label class="form-label fw-semibold" style="font-size: 13px">Servicio</label>
-          <select
-            v-model.number="form.servicio"
-            class="form-select form-select-sm"
-          >
+          <select v-model.number="form.servicio" class="form-select form-select-sm">
             <option :value="0">Seleccioná un servicio</option>
-            <option
-              v-for="s in serviciosActivos"
-              :key="s.id"
-              :value="s.id"
-            >
+            <option v-for="s in serviciosActivos" :key="s.id" :value="s.id">
               {{ s.nombre }} – $ {{ s.precio }}
             </option>
           </select>
@@ -142,7 +136,8 @@
         </div>
 
         <div class="alert alert-info mb-0" style="font-size: 12px">
-          El valor final del turno puede variar según los procedimientos realizados durante la consulta.
+          El valor final del turno puede variar según los procedimientos realizados durante la
+          consulta.
         </div>
       </div>
     </div>
@@ -157,19 +152,19 @@
 
         <div class="mb-3">
           <label class="form-label fw-semibold" style="font-size: 13px">Veterinario</label>
-          <select
-            v-model.number="form.veterinario"
-            class="form-select form-select-sm"
-          >
+          <select v-model.number="form.veterinario" class="form-select form-select-sm">
             <option :value="0">Seleccioná un profesional</option>
-            <option
-              v-for="v in veterinarios"
-              :key="v.id"
-              :value="v.id"
-            >
+            <option v-for="v in veterinarios" :key="v.id" :value="v.id">
               {{ nombreCompletoVet(v) }}
             </option>
           </select>
+          <img
+            v-if="veterinarios.find((v) => v.id === form.veterinario)?.foto"
+            :src="urlImagen(veterinarios.find((v) => v.id === form.veterinario)?.foto)"
+            alt="Foto del veterinario seleccionado"
+            class="rounded-circle mt-2"
+            style="width: 48px; height: 48px; object-fit: cover"
+          />
         </div>
 
         <div class="row g-2 mb-3">
@@ -184,11 +179,7 @@
           </div>
           <div class="col-12 col-sm-6">
             <label class="form-label fw-semibold" style="font-size: 13px">Hora</label>
-            <input
-              v-model="horaSeleccionada"
-              type="time"
-              class="form-control form-control-sm"
-            />
+            <input v-model="horaSeleccionada" type="time" class="form-control form-control-sm" />
           </div>
         </div>
 
@@ -257,6 +248,7 @@
 </template>
 
 <script setup lang="ts">
+import { urlImagen } from '@/utils/imagenes'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTurnoStore } from '@/stores/turnoStore'
@@ -309,9 +301,7 @@ onMounted(async () => {
 })
 
 const mascotas = computed<Mascota[]>(() => mascotaStore.mascotas)
-const serviciosActivos = computed<Servicio[]>(() =>
-  servicioStore.servicios.filter((s) => s.activo),
-)
+const serviciosActivos = computed<Servicio[]>(() => servicioStore.servicios.filter((s) => s.activo))
 const veterinarios = computed<VeterinarioPerfil[]>(() => veterinarioStore.veterinarios)
 
 function seleccionarMascota(id: number) {

@@ -8,6 +8,7 @@ __pycache__/
 *.log
 db.sqlite3
 /media/
+/src/django/media/
 
 # Environment
 .env.user
@@ -36,6 +37,7 @@ frontend/layouts.txt
 frontend/api.txt
 
 # Notas personales
+/REVISION-LOCAL.md
 src/django/ReadmeProfesor.md
 pendientes-docker.md
 

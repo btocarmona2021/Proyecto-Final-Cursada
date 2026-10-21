@@ -7,13 +7,18 @@
 
     <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
       <button class="btn btn-success" @click="abrirModalNuevo">+ Nuevo dueño</button>
-      <input type="text" class="form-control form-control-sm ms-auto" style="max-width:260px"
-        placeholder="Buscar dueño..." v-model="busqueda" />
+      <input
+        type="text"
+        class="form-control form-control-sm ms-auto"
+        style="max-width: 260px"
+        placeholder="Buscar dueño..."
+        v-model="busqueda"
+      />
     </div>
 
-    <div v-if="cargandoVista" class="text-center text-muted py-5">
-      Cargando dueños...
-    </div>
+    <div v-if="cargandoVista" class="text-center text-muted py-5">Cargando dueños...</div>
+
+    <div v-else-if="errorCarga" class="alert alert-danger">{{ errorCarga }}</div>
 
     <div v-else-if="duenosFiltrados.length === 0" class="text-center text-muted py-5">
       No se encontraron dueños
@@ -23,15 +28,26 @@
       <div v-for="dueno in duenosFiltrados" :key="dueno.id" class="card border-0 shadow-sm mb-3">
         <div class="card-body d-flex justify-content-between align-items-start gap-3 flex-wrap">
           <div class="d-flex gap-3 align-items-start">
-            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-              style="width:48px;height:48px;background:#d1e7dd;color:#146c43;">
-              {{ iniciales(dueno.first_name, dueno.last_name) }}
+            <div
+              class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+              style="width: 48px; height: 48px; background: #d1e7dd; color: #146c43"
+            >
+              <img
+                v-if="perfilClienteStore.perfiles.find((p) => p.usuario.id === dueno.id)?.foto"
+                :src="
+                  urlImagen(
+                    perfilClienteStore.perfiles.find((p) => p.usuario.id === dueno.id)?.foto,
+                  )
+                "
+                alt=""
+                class="rounded-circle"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+              <span v-else>{{ iniciales(dueno.first_name, dueno.last_name) }}</span>
             </div>
 
             <div>
-              <h6 class="fw-bold mb-1">
-                {{ dueno.first_name }} {{ dueno.last_name }}
-              </h6>
+              <h6 class="fw-bold mb-1">{{ dueno.first_name }} {{ dueno.last_name }}</h6>
 
               <div class="text-muted small mb-1">
                 {{ obtenerTelefono(dueno.id) || 'Sin teléfono' }} · {{ dueno.email || 'Sin email' }}
@@ -46,8 +62,11 @@
                   Sin mascotas
                 </span>
 
-                <span v-for="m in mascotasDeUsuario(dueno.id)" :key="m.id"
-                  class="badge bg-success-subtle text-success-emphasis">
+                <span
+                  v-for="m in mascotasDeUsuario(dueno.id)"
+                  :key="m.id"
+                  class="badge bg-success-subtle text-success-emphasis"
+                >
                   {{ m.nombre }}
                 </span>
               </div>
@@ -55,18 +74,27 @@
           </div>
 
           <div class="d-flex flex-column align-items-start align-items-md-end gap-2">
-            <div class="text-muted small">
-              {{ mascotasDeUsuario(dueno.id).length }} mascota(s)
-            </div>
+            <div class="text-muted small">{{ mascotasDeUsuario(dueno.id).length }} mascota(s)</div>
 
             <div class="d-flex gap-2">
-              <RouterLink :to="`/admin/duenos/${dueno.id}`" class="btn btn-sm btn-outline-secondary">
+              <RouterLink
+                :to="`/admin/duenos/${dueno.id}`"
+                class="btn btn-sm btn-outline-secondary"
+              >
                 Ver detalle
               </RouterLink>
-              <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditar(dueno)">
+              <button
+                v-if="auth.esAdmin"
+                class="btn btn-sm btn-outline-primary"
+                @click="abrirModalEditar(dueno)"
+              >
                 Editar
               </button>
-              <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminar(dueno)">
+              <button
+                v-if="auth.esAdmin"
+                class="btn btn-sm btn-outline-danger"
+                @click="confirmarEliminar(dueno)"
+              >
                 Eliminar
               </button>
             </div>
@@ -85,7 +113,15 @@
           </div>
 
           <div class="modal-body">
-              <div class="row">
+            <ImagenSelector
+              v-model="form.foto"
+              :actual="
+                perfilClienteStore.perfiles.find((p) => p.usuario.id === duenoEditando?.id)?.foto
+              "
+              etiqueta="Foto del dueño"
+              id="imagen-duenos"
+            />
+            <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Nombre</label>
                 <input type="text" class="form-control" v-model="form.first_name" />
@@ -135,6 +171,9 @@
 </template>
 
 <script setup lang="ts">
+import ImagenSelector from '@/components/ImagenSelector.vue'
+import { urlImagen } from '@/utils/imagenes'
+import { useAuthStore } from '@/stores/authStore'
 import { ref, computed, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
@@ -144,11 +183,13 @@ import { useMascotaStore } from '@/stores/mascotaStore'
 import type { UsuarioAuth } from '@/interfaces/usuarioInterface'
 import type { RegistroClienteForm } from '@/interfaces/perfilUsuarioInterface'
 
+const auth = useAuthStore()
 const usuarioStore = useUsuarioStore()
 const perfilClienteStore = usePerfilClienteStore()
 const mascotaStore = useMascotaStore()
 
 const busqueda = ref('')
+const errorCarga = ref('')
 const modoEdicion = ref(false)
 const guardando = ref(false)
 const duenoEditando = ref<UsuarioAuth | null>(null)
@@ -166,25 +207,24 @@ const formularioVacio = (): RegistroClienteForm => ({
 const form = ref<RegistroClienteForm>(formularioVacio())
 
 onMounted(async () => {
-  await Promise.all([
-    perfilClienteStore.obtenerTodos(),
-    mascotaStore.obtenerTodos(),
-  ])
+  try {
+    await Promise.all([perfilClienteStore.obtenerTodos(), mascotaStore.obtenerTodos()])
+  } catch {
+    errorCarga.value = 'No se pudieron cargar los dueños. Intentá nuevamente.'
+  }
 })
 
-const cargandoVista = computed(() =>
-  usuarioStore.cargando || perfilClienteStore.cargando || mascotaStore.cargando
+const cargandoVista = computed(
+  () => usuarioStore.cargando || perfilClienteStore.cargando || mascotaStore.cargando,
 )
 
-const soloClientes = computed(() =>
-  perfilClienteStore.perfiles.map((perfil) => perfil.usuario)
-)
+const soloClientes = computed(() => perfilClienteStore.perfiles.map((perfil) => perfil.usuario))
 
 const duenosFiltrados = computed(() =>
   soloClientes.value.filter((u: UsuarioAuth) => {
     const texto = `${u.first_name} ${u.last_name} ${u.email} ${u.username}`.toLowerCase()
     return texto.includes(busqueda.value.toLowerCase())
-  })
+  }),
 )
 
 function getPerfilPorUsuario(userId: number) {
@@ -229,12 +269,18 @@ function abrirModalEditar(u: UsuarioAuth) {
     email: u.email,
     telefono: obtenerTelefono(u.id),
     direccion: obtenerDireccion(u.id),
+    foto: null,
   }
   obtenerModal().show()
 }
 
 async function guardar() {
-  if (!form.value.first_name || !form.value.last_name || !form.value.email || !form.value.username) {
+  if (
+    !form.value.first_name ||
+    !form.value.last_name ||
+    !form.value.email ||
+    !form.value.username
+  ) {
     Swal.fire('Campos requeridos', 'Completá nombre, apellido, username y email.', 'warning')
     return
   }
@@ -249,7 +295,7 @@ async function guardar() {
   try {
     if (modoEdicion.value && duenoEditando.value) {
       const perfil = perfilClienteStore.perfiles.find(
-        (p) => p.usuario.id === duenoEditando.value!.id
+        (p) => p.usuario.id === duenoEditando.value!.id,
       )
 
       if (perfil) {
@@ -260,6 +306,7 @@ async function guardar() {
           email: form.value.email,
           telefono: form.value.telefono,
           direccion: form.value.direccion,
+          foto: form.value.foto,
         })
       }
 
@@ -287,7 +334,14 @@ async function guardar() {
     obtenerModal().hide()
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const msg = String(data?.username || data?.email || data?.detail || data?.non_field_errors || 'No se pudo guardar el dueño.')
+    const msg = String(
+      data?.foto ||
+        data?.username ||
+        data?.email ||
+        data?.detail ||
+        data?.non_field_errors ||
+        'No se pudo guardar el dueño.',
+    )
     Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false

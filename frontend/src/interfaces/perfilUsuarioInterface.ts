@@ -25,6 +25,7 @@ export interface PerfilUsuarioForm {
 
 // ✅ Formulario para registrar un nuevo cliente (snake_case)
 export interface RegistroClienteForm {
+  foto?: File | null
   username: string
   password: string
   first_name: string

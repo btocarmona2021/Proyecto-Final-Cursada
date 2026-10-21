@@ -13,15 +13,14 @@ export interface VeterinarioPerfil {
   fecha_actualizacion: string
 }
 
-// Formulario para crear/editar veterinarios (lado admin)
+// interface para crear/editar veterinarios (lado admin)
 export interface VeterinarioPerfilForm {
   // Datos de usuario - normalmente solo en alta
   username?: string
   password?: string
-  primer_nombre?: string
-  apellido?: string
-  correo?: string
-
+  first_name?: string
+  last_name?: string
+  email?: string
   // Datos específicos del veterinario
   matricula: string
   especialidad?: string

@@ -1,5 +1,6 @@
 # mascotas/serializers.py
 from rest_framework import serializers
+from core.imagenes import ImagenValidada
 from .models import Especie, Raza, Mascota
 from django.contrib.auth.models import User
 
@@ -45,6 +46,7 @@ class RazaSerializer(serializers.ModelSerializer):
 # SERIALIZER PARA CREACIÓN DE MASCOTA
 class MascotaCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear mascotas - más simple"""
+    foto = ImagenValidada(required=False, allow_null=True)
     
     class Meta:
         model = Mascota

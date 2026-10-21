@@ -3,29 +3,18 @@
   <div class="container-fluid">
     <!-- Breadcrumb simple -->
     <div class="mb-2">
-      <RouterLink
-        :to="{ name: 'ClienteMascotas' }"
-        class="small text-decoration-none text-muted"
-      >
+      <RouterLink :to="{ name: 'ClienteMascotas' }" class="small text-decoration-none text-muted">
         ← Volver a mis mascotas
       </RouterLink>
     </div>
 
     <!-- Estado de carga -->
-    <div
-      v-if="cargando"
-      class="text-center text-muted py-4"
-      style="font-size: 13px"
-    >
+    <div v-if="cargando" class="text-center text-muted py-4" style="font-size: 13px">
       Cargando información de la mascota...
     </div>
 
     <!-- No encontrada -->
-    <div
-      v-else-if="!mascota"
-      class="alert alert-warning"
-      style="font-size: 13px"
-    >
+    <div v-else-if="!mascota" class="alert alert-warning" style="font-size: 13px">
       Mascota no encontrada. Es posible que haya sido desactivada o no tengas acceso.
     </div>
 
@@ -38,7 +27,14 @@
             class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
             style="width: 64px; height: 64px; background: #e7f5ff"
           >
-            <span style="font-size: 2rem">
+            <img
+              v-if="mascota.foto"
+              :src="urlImagen(mascota.foto)"
+              :alt="mascota.nombre"
+              class="rounded-circle"
+              style="width: 100%; height: 100%; object-fit: cover"
+            />
+            <span v-else style="font-size: 2rem">
               {{ emojiAvatar(mascota.especie_nombre) }}
             </span>
           </div>
@@ -94,23 +90,11 @@
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <h6 class="fw-bold mb-2">Últimos turnos</h6>
-              <div
-                v-if="turnosMascota.length === 0"
-                class="text-muted"
-                style="font-size: 13px"
-              >
+              <div v-if="turnosMascota.length === 0" class="text-muted" style="font-size: 13px">
                 No hay turnos registrados para esta mascota.
               </div>
-              <ul
-                v-else
-                class="list-group list-group-flush"
-                style="font-size: 13px"
-              >
-                <li
-                  v-for="t in turnosMascota.slice(0, 5)"
-                  :key="t.id"
-                  class="list-group-item px-0"
-                >
+              <ul v-else class="list-group list-group-flush" style="font-size: 13px">
+                <li v-for="t in turnosMascota.slice(0, 5)" :key="t.id" class="list-group-item px-0">
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
                       <div class="fw-semibold">
@@ -118,16 +102,10 @@
                       </div>
                       <div class="text-muted">
                         {{ t.servicio_nombre }}
-                        <span v-if="t.veterinario_nombre">
-                          · {{ t.veterinario_nombre }}
-                        </span>
+                        <span v-if="t.veterinario_nombre"> · {{ t.veterinario_nombre }} </span>
                       </div>
                     </div>
-                    <span
-                      class="badge"
-                      :class="insigniaEstado(t.estado)"
-                      style="font-size: 11px"
-                    >
+                    <span class="badge" :class="insigniaEstado(t.estado)" style="font-size: 11px">
                       {{ t.estado_display }}
                     </span>
                   </div>
@@ -144,23 +122,11 @@
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <h6 class="fw-bold mb-2">Vacunas</h6>
-              <div
-                v-if="vacunasMascota.length === 0"
-                class="text-muted"
-                style="font-size: 13px"
-              >
+              <div v-if="vacunasMascota.length === 0" class="text-muted" style="font-size: 13px">
                 Sin vacunas registradas.
               </div>
-              <ul
-                v-else
-                class="list-group list-group-flush"
-                style="font-size: 13px"
-              >
-                <li
-                  v-for="v in vacunasMascota"
-                  :key="v.id"
-                  class="list-group-item px-0"
-                >
+              <ul v-else class="list-group list-group-flush" style="font-size: 13px">
+                <li v-for="v in vacunasMascota" :key="v.id" class="list-group-item px-0">
                   <div class="d-flex justify-content-between">
                     <span class="fw-semibold">{{ v.nombre }}</span>
                     <span class="text-muted">
@@ -180,23 +146,11 @@
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <h6 class="fw-bold mb-2">Consultas</h6>
-              <div
-                v-if="consultasMascota.length === 0"
-                class="text-muted"
-                style="font-size: 13px"
-              >
+              <div v-if="consultasMascota.length === 0" class="text-muted" style="font-size: 13px">
                 Sin consultas registradas.
               </div>
-              <ul
-                v-else
-                class="list-group list-group-flush"
-                style="font-size: 13px"
-              >
-                <li
-                  v-for="c in consultasMascota"
-                  :key="c.id"
-                  class="list-group-item px-0"
-                >
+              <ul v-else class="list-group list-group-flush" style="font-size: 13px">
+                <li v-for="c in consultasMascota" :key="c.id" class="list-group-item px-0">
                   <div class="d-flex justify-content-between">
                     <span class="fw-semibold">{{ c.tipo_display }}</span>
                     <span class="text-muted">
@@ -206,6 +160,10 @@
                   <div v-if="c.diagnostico" class="text-muted">
                     {{ c.diagnostico }}
                   </div>
+                  <details v-if="c.recetas?.length" class="mt-2">
+                    <summary class="text-success">Ver receta ({{ c.recetas.length }})</summary>
+                    <RecetaDetalle :items="c.recetas" class="mt-2" />
+                  </details>
                   <div v-if="c.veterinario_nombre" class="text-muted small">
                     Dr/a: {{ c.veterinario_nombre }}
                   </div>
@@ -218,10 +176,7 @@
 
       <!-- CTA -->
       <div class="d-flex justify-content-end">
-        <RouterLink
-          :to="{ name: 'ClienteReservar' }"
-          class="btn btn-success"
-        >
+        <RouterLink :to="{ name: 'ClienteReservar' }" class="btn btn-success">
           Reservar turno para {{ mascota.nombre }}
         </RouterLink>
       </div>
@@ -230,7 +185,10 @@
 </template>
 
 <script setup lang="ts">
+import RecetaDetalle from '@/components/RecetaDetalle.vue'
+import { urlImagen } from '@/utils/imagenes'
 import { computed, onMounted, ref } from 'vue'
+import { fechaDesdeAPI } from '@/utils/fechas'
 import { useRoute } from 'vue-router'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useTurnoStore } from '@/stores/turnoStore'
@@ -290,7 +248,7 @@ const vacunasMascota = computed<Vacuna[]>(() =>
 
 function formatearFecha(iso: string | null | undefined) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-AR', {
+  return fechaDesdeAPI(iso).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

@@ -10,9 +10,9 @@
             <div class="text-center mb-3">
               <div
                 class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                style="width: 52px; height: 52px; background: #e7f5ff;"
+                style="width: 52px; height: 52px; background: #e7f5ff"
               >
-                <span style="font-size: 1.8rem">🐾</span>
+                <MarcaClinica :mostrar-nombre="false" :tamano="52" />
               </div>
               <h5 class="fw-bold mb-0">Crear cuenta</h5>
               <p class="text-muted mb-0" style="font-size: 13px">
@@ -128,11 +128,7 @@
                 />
               </div>
 
-              <button
-                type="submit"
-                class="btn btn-success w-100"
-                :disabled="authStore.cargando"
-              >
+              <button type="submit" class="btn btn-success w-100" :disabled="authStore.cargando">
                 {{ authStore.cargando ? 'Registrando...' : 'Registrarme' }}
               </button>
             </form>
@@ -153,6 +149,7 @@
 </template>
 
 <script setup lang="ts">
+import MarcaClinica from '@/components/MarcaClinica.vue'
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { RegistroClienteForm } from '@/interfaces/perfilUsuarioInterface'

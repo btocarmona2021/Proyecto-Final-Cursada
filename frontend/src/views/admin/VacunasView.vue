@@ -172,6 +172,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { fechaDesdeAPI, diasHastaFecha, fechaParaFormulario } from '@/utils/fechas'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
 import { useVacunaStore } from '@/stores/vacunaStore'
@@ -192,7 +193,7 @@ const vacunaDetalle = ref<Vacuna | null>(null)
 const formularioVacio = () => ({
   mascota: 0,
   nombre: '',
-  fecha_aplicacion: new Date().toISOString().slice(0, 10),
+  fecha_aplicacion: fechaParaFormulario(),
   fecha_proxima: '',
   observaciones: '',
 })
@@ -225,7 +226,7 @@ const vacunasFiltradas = computed(() => {
 
 function getEstadoVacuna(fechaProxima: string | null): string {
   if (!fechaProxima) return 'vigente'
-  const dias = Math.ceil((new Date(fechaProxima).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+  const dias = diasHastaFecha(fechaProxima)
   if (dias < 0) return 'vencida'
   if (dias <= 30) return 'proxima'
   return 'vigente'
@@ -233,7 +234,7 @@ function getEstadoVacuna(fechaProxima: string | null): string {
 
 function estadoVacuna(fechaProxima: string | null) {
   if (!fechaProxima) return 'bg-secondary'
-  const dias = Math.ceil((new Date(fechaProxima).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+  const dias = diasHastaFecha(fechaProxima)
   if (dias < 0) return 'bg-danger'
   if (dias <= 30) return 'bg-warning text-dark'
   return 'bg-success'
@@ -241,14 +242,14 @@ function estadoVacuna(fechaProxima: string | null) {
 
 function etiquetaVacuna(fechaProxima: string | null) {
   if (!fechaProxima) return 'Sin próxima'
-  const dias = Math.ceil((new Date(fechaProxima).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+  const dias = diasHastaFecha(fechaProxima)
   if (dias < 0) return 'Vencida'
   if (dias <= 30) return `Próxima (${dias}d)`
   return 'Al día'
 }
 
 function formatearFecha(fecha: string) {
-  return new Date(fecha).toLocaleDateString('es-AR', {
+  return fechaDesdeAPI(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

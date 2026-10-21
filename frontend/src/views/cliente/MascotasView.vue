@@ -29,11 +29,7 @@
     </div>
 
     <!-- Estado de carga -->
-    <div
-      v-if="cargando"
-      class="text-center text-muted py-4"
-      style="font-size: 13px"
-    >
+    <div v-if="cargando" class="text-center text-muted py-4" style="font-size: 13px">
       Cargando mascotas...
     </div>
 
@@ -43,28 +39,27 @@
       class="alert alert-secondary"
       style="font-size: 13px"
     >
-      Todavía no tenés mascotas registradas. Contactá a la clínica para dar de alta
-      a tu mascota o hazlo en tu próxima visita.
+      Todavía no tenés mascotas registradas. Contactá a la clínica para dar de alta a tu mascota o
+      hazlo en tu próxima visita.
     </div>
 
     <!-- Lista de mascotas -->
     <div v-else class="row g-2">
-      <div
-        v-for="m in mascotasFiltradas"
-        :key="m.id"
-        class="col-12"
-      >
-        <div
-          class="card border-0 shadow-sm mb-1"
-          role="button"
-          @click="irDetalle(m.id)"
-        >
+      <div v-for="m in mascotasFiltradas" :key="m.id" class="col-12">
+        <div class="card border-0 shadow-sm mb-1" role="button" @click="irDetalle(m.id)">
           <div class="card-body d-flex align-items-center gap-3">
             <div
               class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
               style="width: 52px; height: 52px; background: #e7f5ff"
             >
-              <span style="font-size: 1.7rem">
+              <img
+                v-if="m.foto"
+                :src="urlImagen(m.foto)"
+                :alt="m.nombre"
+                class="rounded-circle"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+              <span v-else style="font-size: 1.7rem">
                 {{ emojiAvatar(m.especie_nombre) }}
               </span>
             </div>
@@ -77,11 +72,7 @@
                   <div class="text-muted" style="font-size: 12px">
                     {{ m.especie_nombre }} · {{ m.raza_nombre }}
                   </div>
-                  <div
-                    v-if="m.peso_actual"
-                    class="text-muted"
-                    style="font-size: 12px"
-                  >
+                  <div v-if="m.peso_actual" class="text-muted" style="font-size: 12px">
                     Peso: {{ m.peso_actual }} kg
                   </div>
                 </div>
@@ -102,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import { urlImagen } from '@/utils/imagenes'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMascotaStore } from '@/stores/mascotaStore'

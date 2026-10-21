@@ -7,7 +7,11 @@
 
     <div class="d-flex gap-2 mb-3">
       <button class="btn btn-success" @click="abrirModalNueva">+ Nueva internación</button>
-      <select class="form-select form-select-sm ms-auto" style="width:180px" v-model="filtroEstado">
+      <select
+        class="form-select form-select-sm ms-auto"
+        style="width: 180px"
+        v-model="filtroEstado"
+      >
         <option value="">Todos los estados</option>
         <option value="internado">Internado</option>
         <option value="observacion">Observación</option>
@@ -34,12 +38,20 @@
               <th>Egreso</th>
               <th>Motivo</th>
               <th>Estado</th>
-              <th style="width:220px"></th>
+              <th style="width: 220px"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="i in internacionesFiltradas" :key="i.id">
-              <td class="fw-semibold">{{ i.mascota_nombre }}</td>
+              <td class="fw-semibold">
+                <img
+                  v-if="mascotaStore.mascotas.find((m) => m.id === i.mascota)?.foto"
+                  :src="urlImagen(mascotaStore.mascotas.find((m) => m.id === i.mascota)?.foto)"
+                  alt=""
+                  class="rounded-circle me-2"
+                  style="width: 32px; height: 32px; object-fit: cover"
+                />{{ i.mascota_nombre }}
+              </td>
               <td class="small">{{ i.veterinario_nombre }}</td>
               <td class="small">{{ formatearFecha(i.fecha_ingreso) }}</td>
               <td class="small">{{ i.fecha_egreso ? formatearFecha(i.fecha_egreso) : '—' }}</td>
@@ -73,7 +85,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ modoEdicion ? 'Editar internación' : 'Nueva internación' }}</h5>
+            <h5 class="modal-title">
+              {{ modoEdicion ? 'Editar internación' : 'Nueva internación' }}
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -135,9 +149,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content" v-if="internacionSeleccionada">
           <div class="modal-header">
-            <h5 class="modal-title">
-              Evoluciones - {{ internacionSeleccionada.mascota_nombre }}
-            </h5>
+            <h5 class="modal-title">Evoluciones - {{ internacionSeleccionada.mascota_nombre }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -156,10 +168,14 @@
                 <div class="card-body">
                   <div class="d-flex justify-content-between mb-2">
                     <span class="fw-semibold small">{{ formatearFecha(e.fecha) }}</span>
-                    <span class="text-muted small">{{ e.veterinario_nombre || 'Sin veterinario' }}</span>
+                    <span class="text-muted small">{{
+                      e.veterinario_nombre || 'Sin veterinario'
+                    }}</span>
                   </div>
                   <div class="small mb-1"><strong>Descripción:</strong> {{ e.descripcion }}</div>
-                  <div class="small text-muted" v-if="e.temperatura">Temp: {{ e.temperatura }}°C</div>
+                  <div class="small text-muted" v-if="e.temperatura">
+                    Temp: {{ e.temperatura }}°C
+                  </div>
                   <div class="small text-muted" v-if="e.peso">Peso: {{ e.peso }} kg</div>
                   <div class="small text-muted" v-if="e.indicaciones">
                     <strong>Indicaciones:</strong> {{ e.indicaciones }}
@@ -196,25 +212,47 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Temperatura (°C)</label>
-                <input type="number" step="0.1" class="form-control" v-model.number="formEvolucion.temperatura" />
+                <input
+                  type="number"
+                  step="0.1"
+                  class="form-control"
+                  v-model.number="formEvolucion.temperatura"
+                />
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Peso (kg)</label>
-                <input type="number" step="0.1" class="form-control" v-model.number="formEvolucion.peso" />
+                <input
+                  type="number"
+                  step="0.1"
+                  class="form-control"
+                  v-model.number="formEvolucion.peso"
+                />
               </div>
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Descripción</label>
-              <textarea class="form-control" rows="3" v-model="formEvolucion.descripcion"></textarea>
+              <textarea
+                class="form-control"
+                rows="3"
+                v-model="formEvolucion.descripcion"
+              ></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Indicaciones</label>
-              <textarea class="form-control" rows="2" v-model="formEvolucion.indicaciones"></textarea>
+              <textarea
+                class="form-control"
+                rows="2"
+                v-model="formEvolucion.indicaciones"
+              ></textarea>
             </div>
           </div>
           <div class="modal-footer">
             <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button class="btn btn-success" @click="guardarEvolucion" :disabled="guardandoEvolucion">
+            <button
+              class="btn btn-success"
+              @click="guardarEvolucion"
+              :disabled="guardandoEvolucion"
+            >
               {{ guardandoEvolucion ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -225,6 +263,7 @@
 </template>
 
 <script setup lang="ts">
+import { urlImagen } from '@/utils/imagenes'
 import { ref, computed, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
@@ -278,7 +317,7 @@ onMounted(async () => {
 })
 
 const internacionesFiltradas = computed(() => {
-  return internacionStore.internaciones.filter(i => {
+  return internacionStore.internaciones.filter((i) => {
     if (!filtroEstado.value) return true
     return i.estado === filtroEstado.value
   })
@@ -287,7 +326,7 @@ const internacionesFiltradas = computed(() => {
 const evolucionesActuales = computed(() => {
   if (!internacionSeleccionada.value) return []
   return evolucionStore.evoluciones
-    .filter(e => e.internacion === internacionSeleccionada.value!.id)
+    .filter((e) => e.internacion === internacionSeleccionada.value!.id)
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
 })
 
@@ -356,16 +395,28 @@ async function guardar() {
 
     if (modoEdicion.value && internacionEditando.value) {
       await internacionStore.actualizar(internacionEditando.value.id, payload)
-      Swal.fire({ icon: 'success', title: 'Internación actualizada', timer: 1500, showConfirmButton: false })
+      Swal.fire({
+        icon: 'success',
+        title: 'Internación actualizada',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     } else {
       await internacionStore.crear(payload)
-      Swal.fire({ icon: 'success', title: 'Internación creada', timer: 1500, showConfirmButton: false })
+      Swal.fire({
+        icon: 'success',
+        title: 'Internación creada',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     }
     await internacionStore.obtenerTodos()
     obtenerModal().hide()
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar la internación.')
+    const msg = String(
+      data?.detail || data?.non_field_errors || 'No se pudo guardar la internación.',
+    )
     Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
@@ -382,7 +433,12 @@ async function guardarEvolucion() {
   try {
     await evolucionStore.crear(formEvolucion.value)
     await evolucionStore.obtenerTodos()
-    Swal.fire({ icon: 'success', title: 'Evolución registrada', timer: 1500, showConfirmButton: false })
+    Swal.fire({
+      icon: 'success',
+      title: 'Evolución registrada',
+      timer: 1500,
+      showConfirmButton: false,
+    })
     obtenerModalNuevaEvolucion().hide()
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
@@ -407,7 +463,12 @@ async function confirmarEliminar(i: Internacion) {
   if (result.isConfirmed) {
     await internacionStore.eliminar(i.id)
     await internacionStore.obtenerTodos()
-    Swal.fire({ icon: 'success', title: 'Internación eliminada', timer: 1500, showConfirmButton: false })
+    Swal.fire({
+      icon: 'success',
+      title: 'Internación eliminada',
+      timer: 1500,
+      showConfirmButton: false,
+    })
   }
 }
 

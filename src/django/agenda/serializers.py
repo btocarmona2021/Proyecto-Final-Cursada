@@ -28,7 +28,6 @@ class ServicioSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-
 # SERIALIZERS PARA EL MODELO DE CREACIÓN Y ACTUALIZACIÓN DE TURNOS, CON VALIDACIÓN DE HORARIOS SOLAPADOS
 class TurnoCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -136,7 +135,6 @@ class TurnoCreateSerializer(serializers.ModelSerializer):
             )
         # Si no hay conflictos, retorno los datos validados.
         return data
-
 
 # SERIALIZER PARA EL MODELO DE TURNO CON INFORMACIÓN RELACIONADA DE MASCOTA,
 # VETERINARIO Y SERVICIO, Y CAMPOS CALCULADOS COMO NOMBRES Y HORA DE FIN ESTIMADA.

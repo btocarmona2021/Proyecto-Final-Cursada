@@ -1,4 +1,3 @@
-
 // src/stores/authStore.ts
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -39,17 +38,16 @@ export const useAuthStore = defineStore('auth', () => {
   // ─────────────────────────────────────────────
   // AUTH
   // ─────────────────────────────────────────────
-  const iniciarSesion = async (credentials: FormularioInicioSesion) => {
+  const iniciarSesion = async (credenciales: FormularioInicioSesion) => {
     cargando.value = true;
     error.value = null;
     try {
-      const tokens: RespuestaToken = await authService.login(credentials);
+      const tokens: RespuestaToken = await authService.login(credenciales);
 
       tokenAcceso.value = tokens.access;
       tokenRefresco.value = tokens.refresh;
 
-      const maybeWithGroup = tokens as RespuestaToken & { grupo?: string | null };
-      grupo.value = maybeWithGroup.grupo ?? null;
+      grupo.value = tokens.grupo ?? null;
 
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
@@ -104,7 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('grupo');
-    router.push('/login');
+    router.replace('/');
   };
 
   return {

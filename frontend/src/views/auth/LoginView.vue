@@ -8,20 +8,18 @@
           <div class="card-body p-4">
             <!-- Logo / título -->
             <div class="text-center mb-3">
-              <div
-                class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                style="width: 52px; height: 52px; background: #e7f5ff;"
-              >
-                <span style="font-size: 1.8rem">🐾</span>
-              </div>
-              <h5 class="fw-bold mb-0">VetSystem</h5>
+              <h5 class="fw-bold mb-0"><MarcaClinica :tamano="52" /></h5>
               <p class="text-muted mb-0" style="font-size: 13px">
                 Portal para clientes y veterinarios
               </p>
             </div>
 
             <!-- Mensaje de error -->
-            <div v-if="authStore.error" class="alert alert-danger py-2 px-3" style="font-size: 13px">
+            <div
+              v-if="authStore.error"
+              class="alert alert-danger py-2 px-3"
+              style="font-size: 13px"
+            >
               {{ authStore.error }}
             </div>
 
@@ -96,7 +94,8 @@
             <!-- Tarjetas informativas (mockup-style) -->
             <div class="mb-2">
               <div class="alert alert-info py-2 px-3 mb-2" style="font-size: 12px">
-                <strong>Clientes:</strong> podés ver tus mascotas, turnos e internaciones en tiempo real.
+                <strong>Clientes:</strong> podés ver tus mascotas, turnos e internaciones en tiempo
+                real.
               </div>
               <div class="alert alert-secondary py-2 px-3 mb-0" style="font-size: 12px">
                 <strong>Veterinarios:</strong> ingresen con su usuario asignado por la clínica.
@@ -130,6 +129,7 @@
 </template>
 
 <script setup lang="ts">
+import MarcaClinica from '@/components/MarcaClinica.vue'
 import { reactive, ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { FormularioInicioSesion } from '@/interfaces/usuarioInterface'

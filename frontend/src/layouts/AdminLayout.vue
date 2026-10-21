@@ -1,13 +1,9 @@
 <template>
   <div class="d-flex flex-column vh-100">
-
     <!-- TOPBAR -->
-    <nav
-      class="navbar navbar-expand navbar-light bg-white border-bottom px-3"
-      style="height: 52px"
-    >
-      <span class="navbar-brand fw-bold text-success me-3">
-        <span class="badge bg-success me-1">V</span> VetSystem
+    <nav class="navbar navbar-expand navbar-light bg-white border-bottom px-3" style="height: 52px">
+      <span style="max-width: 30%" class="navbar-brand fw-bold text-success me-3">
+        <MarcaClinica />
       </span>
 
       <input
@@ -18,16 +14,13 @@
       />
 
       <div class="ms-auto d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-outline-secondary" @click="cerrarSesion">
-          Salir
-        </button>
-        <span class="badge bg-success fs-6">{{ iniciales }}</span>
+        <button class="btn btn-sm btn-outline-secondary" @click="cerrarSesion">Salir</button>
+        <FotoSesion :alternativa="iniciales" />
       </div>
     </nav>
 
-
     <!-- BODY: sidebar + contenido -->
-    
+
     <div class="d-flex flex-grow-1 overflow-hidden">
       <!-- SIDEBAR -->
       <nav
@@ -41,11 +34,7 @@
         >
           Principal
         </p>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/dashboard"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/dashboard" active-class="active-link">
           🏠 Dashboard
         </RouterLink>
         <RouterLink
@@ -66,25 +55,13 @@
         >
           Clínica
         </p>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/pacientes"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/pacientes" active-class="active-link">
           🐾 Pacientes
         </RouterLink>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/historia"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/historia" active-class="active-link">
           📋 Historia Clínica
         </RouterLink>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/duenos"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/duenos" active-class="active-link">
           👤 Dueños
         </RouterLink>
         <RouterLink
@@ -97,11 +74,7 @@
             {{ internacionesActivas }}
           </span>
         </RouterLink>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/vacunas"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/vacunas" active-class="active-link">
           💉 Vacunas
         </RouterLink>
 
@@ -112,26 +85,22 @@
         >
           Gestión
         </p>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/veterinarios"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/veterinarios" active-class="active-link">
           👨‍⚕️ Veterinarios
         </RouterLink>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/razas"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/razas" active-class="active-link">
           🐶 Razas y Especies
         </RouterLink>
+        <RouterLink class="nav-link px-3 py-2" to="/admin/servicios" active-class="active-link">
+          🧾 Servicios
+        </RouterLink>
         <RouterLink
+          v-if="authStore.esAdmin"
           class="nav-link px-3 py-2"
-          to="/admin/servicios"
+          :to="{ name: 'DatosClinica' }"
           active-class="active-link"
         >
-          🧾 Servicios
+          🏥 Datos de la clínica
         </RouterLink>
 
         <!-- ANALÍTICA -->
@@ -141,11 +110,7 @@
         >
           Analítica
         </p>
-        <RouterLink
-          class="nav-link px-3 py-2"
-          to="/admin/reportes"
-          active-class="active-link"
-        >
+        <RouterLink class="nav-link px-3 py-2" to="/admin/reportes" active-class="active-link">
           📊 Reportes
         </RouterLink>
       </nav>
@@ -159,6 +124,8 @@
 </template>
 
 <script setup lang="ts">
+import MarcaClinica from '@/components/MarcaClinica.vue'
+import FotoSesion from '@/components/FotoSesion.vue'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -167,9 +134,7 @@ const authStore = useAuthStore()
 const turnosHoy = ref(0)
 const internacionesActivas = ref(0)
 
-const iniciales = computed(
-  () => authStore.grupo?.slice(0, 2).toUpperCase() ?? 'US'
-)
+const iniciales = computed(() => authStore.grupo?.slice(0, 2).toUpperCase() ?? 'US')
 
 const cerrarSesion = () => authStore.cerrarSesion()
 </script>

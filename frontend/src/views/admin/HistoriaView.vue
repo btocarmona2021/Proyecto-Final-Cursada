@@ -25,28 +25,16 @@
 
           <div class="col-6 col-md-3">
             <label class="form-label small fw-semibold">Fecha desde</label>
-            <input
-              v-model="filtros.fechaDesde"
-              type="date"
-              class="form-control form-control-sm"
-            />
+            <input v-model="filtros.fechaDesde" type="date" class="form-control form-control-sm" />
           </div>
 
           <div class="col-6 col-md-3">
             <label class="form-label small fw-semibold">Fecha hasta</label>
-            <input
-              v-model="filtros.fechaHasta"
-              type="date"
-              class="form-control form-control-sm"
-            />
+            <input v-model="filtros.fechaHasta" type="date" class="form-control form-control-sm" />
           </div>
 
           <div class="col-12 col-md-2 d-flex justify-content-end">
-            <button
-              type="button"
-              class="btn btn-success btn-sm w-100"
-              @click="abrirModalNueva"
-            >
+            <button type="button" class="btn btn-success btn-sm w-100" @click="abrirModalNueva">
               Nueva consulta
             </button>
           </div>
@@ -55,11 +43,7 @@
     </div>
 
     <!-- Estado de carga -->
-    <div
-      v-if="cargando"
-      class="text-center text-muted py-5"
-      style="font-size: 13px"
-    >
+    <div v-if="cargando" class="text-center text-muted py-5" style="font-size: 13px">
       Cargando historia clínica...
     </div>
 
@@ -88,10 +72,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="c in consultasFiltradas"
-              :key="c.id"
-            >
+            <tr v-for="c in consultasFiltradas" :key="c.id">
               <td class="small">
                 {{ formatearFecha(c.fecha) }}
               </td>
@@ -116,6 +97,13 @@
                 <div class="d-flex gap-1 justify-content-end">
                   <button
                     type="button"
+                    class="btn btn-sm btn-outline-success"
+                    @click="abrirRecetas(c)"
+                  >
+                    Receta ({{ c.recetas?.length ?? 0 }})
+                  </button>
+                  <button
+                    type="button"
                     class="btn btn-sm btn-outline-secondary"
                     @click="abrirModalEditar(c)"
                   >
@@ -129,23 +117,42 @@
       </div>
     </div>
 
+    <div id="modalRecetas" class="modal fade" tabindex="-1" aria-labelledby="titulo-recetas">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 id="titulo-recetas" class="modal-title">
+              Receta · {{ consultaReceta?.mascota_nombre }} ·
+              {{ consultaReceta ? formatearFecha(consultaReceta.fecha) : '' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <RecetasConsulta
+              v-if="consultaReceta"
+              :key="consultaReceta.id"
+              :consulta="consultaReceta.id"
+              @actualizado="refrescarRecetas"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal crear/editar consulta -->
-    <div
-      id="modalConsulta"
-      class="modal fade"
-      tabindex="-1"
-    >
+    <div id="modalConsulta" class="modal fade" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               {{ modoEdicion ? 'Editar consulta' : 'Nueva consulta' }}
             </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="row g-3">
@@ -153,14 +160,11 @@
                 <label class="form-label small fw-semibold">Paciente</label>
                 <select
                   v-model.number="form.mascota"
+                  @change="form.turno = 0"
                   class="form-select form-select-sm"
                 >
                   <option :value="0">Seleccioná un paciente</option>
-                  <option
-                    v-for="m in mascotas"
-                    :key="m.id"
-                    :value="m.id"
-                  >
+                  <option v-for="m in mascotas" :key="m.id" :value="m.id">
                     {{ m.nombre }} · {{ m.especie_nombre }} ({{ m.usuario_nombre }})
                   </option>
                 </select>
@@ -168,36 +172,19 @@
 
               <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold">Veterinario</label>
-                <select
-                  v-model.number="form.veterinario"
-                  class="form-select form-select-sm"
-                >
+                <select v-model.number="form.veterinario" class="form-select form-select-sm">
                   <option :value="0">Sin especificar</option>
-                  <option
-                    v-for="v in veterinarios"
-                    :key="v.id"
-                    :value="v.id"
-                  >
+                  <option v-for="v in veterinarios" :key="v.id" :value="v.id">
                     {{ nombreCompletoVet(v) }}
                   </option>
                 </select>
               </div>
 
               <div class="col-12">
-                <label class="form-label small fw-semibold">
-                  Turno asociado (opcional)
-                </label>
-                <select
-                  v-model="form.turno"
-                  class="form-select form-select-sm"
-                  @change="form.turno = form.turno || undefined"
-                >
+                <label class="form-label small fw-semibold"> Turno asociado (opcional) </label>
+                <select v-model.number="form.turno" class="form-select form-select-sm">
                   <option :value="0">Sin turno (consulta directa)</option>
-                  <option
-                    v-for="t in turnosMascota"
-                    :key="t.id"
-                    :value="t.id"
-                  >
+                  <option v-for="t in turnosMascota" :key="t.id" :value="t.id">
                     {{ formatearTurno(t) }}
                   </option>
                 </select>
@@ -205,24 +192,17 @@
 
               <div class="col-12 col-md-4">
                 <label class="form-label small fw-semibold">Fecha</label>
-                <input
-                  v-model="form.fecha"
-                  type="date"
-                  class="form-control form-control-sm"
-                />
+                <input v-model="form.fecha" type="date" class="form-control form-control-sm" />
               </div>
 
               <div class="col-12 col-md-4">
                 <label class="form-label small fw-semibold">Tipo de consulta</label>
-                <select
-                  v-model="form.tipo"
-                  class="form-select form-select-sm"
-                >
+                <select v-model="form.tipo" class="form-select form-select-sm">
                   <option value="control">Control</option>
                   <option value="vacunacion">Vacunación</option>
                   <option value="cirugia">Cirugía</option>
                   <option value="urgencia">Urgencia</option>
-                  <option value="postoperatorio">Postoperatorio</option>
+                  <option value="post_operatorio">Postoperatorio</option>
                   <option value="desparasitacion">Desparasitación</option>
                   <option value="otro">Otro</option>
                 </select>
@@ -240,59 +220,31 @@
 
               <div class="col-12">
                 <label class="form-label small fw-semibold">Motivo de consulta</label>
-                <textarea
-                  v-model="form.motivo_consulta"
-                  rows="2"
-                  class="form-control"
-                ></textarea>
+                <textarea v-model="form.motivo_consulta" rows="2" class="form-control"></textarea>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-semibold">Diagnóstico</label>
-                <textarea
-                  v-model="form.diagnostico"
-                  rows="2"
-                  class="form-control"
-                ></textarea>
+                <textarea v-model="form.diagnostico" rows="2" class="form-control"></textarea>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-semibold">Tratamiento / indicaciones</label>
-                <textarea
-                  v-model="form.tratamiento"
-                  rows="2"
-                  class="form-control"
-                ></textarea>
+                <textarea v-model="form.tratamiento" rows="2" class="form-control"></textarea>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-semibold">Observaciones</label>
-                <textarea
-                  v-model="form.observaciones"
-                  rows="2"
-                  class="form-control"
-                ></textarea>
+                <textarea v-model="form.observaciones" rows="2" class="form-control"></textarea>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cancelar
             </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              :disabled="guardando"
-              @click="guardar"
-            >
-              <span
-                v-if="guardando"
-                class="spinner-border spinner-border-sm me-2"
-              ></span>
+            <button type="button" class="btn btn-success" :disabled="guardando" @click="guardar">
+              <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>
               Guardar consulta
             </button>
           </div>
@@ -303,7 +255,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { fechaDesdeAPI, fechaParaFormulario } from '@/utils/fechas'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import RecetasConsulta from '@/components/RecetasConsulta.vue'
+import type { RecetaItem } from '@/interfaces/recetaItemInterface'
 import { useRoute } from 'vue-router'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
@@ -337,7 +292,7 @@ type ConsultaApi = {
   frecuencia_cardiaca: number | null
   frecuencia_respiratoria: number | null
   proxima_visita: string | null
-  recetas: unknown[]
+  recetas: RecetaItem[]
   created_at: string
   updated_at: string
   activo: boolean
@@ -345,6 +300,20 @@ type ConsultaApi = {
 
 import type { ConsultaClinicaForm } from '@/interfaces/consultaClinicaInterface'
 
+const consultaReceta = ref<ConsultaApi | null>(null)
+async function abrirRecetas(consulta: ConsultaApi) {
+  consultaReceta.value = consulta
+  await nextTick()
+  const elemento = document.getElementById('modalRecetas')
+  if (elemento) Modal.getOrCreateInstance(elemento).show()
+}
+async function refrescarRecetas() {
+  try {
+    await consultaStore.obtenerTodos()
+  } catch {
+    /* La receta guardada sigue visible en su panel. */
+  }
+}
 const route = useRoute()
 const consultaStore = useConsultaStore()
 const mascotaStore = useMascotaStore()
@@ -356,14 +325,8 @@ const filtros = ref<{
   fechaDesde: string
   fechaHasta: string
 }>({
-  fechaDesde: new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1,
-  )
-    .toISOString()
-    .slice(0, 10),
-  fechaHasta: new Date().toISOString().slice(0, 10),
+  fechaDesde: fechaParaFormulario(new Date(new Date().getFullYear(), new Date().getMonth(), 1)),
+  fechaHasta: fechaParaFormulario(),
 })
 
 const guardando = ref(false)
@@ -373,8 +336,8 @@ const consultaEditando = ref<ConsultaApi | null>(null)
 const form = ref<ConsultaClinicaForm>({
   mascota: 0,
   veterinario: undefined,
-  turno: undefined,
-  fecha: new Date().toISOString().slice(0, 10),
+  turno: 0,
+  fecha: fechaParaFormulario(),
   tipo: 'control',
   motivo_consulta: '',
   diagnostico: '',
@@ -414,34 +377,29 @@ onMounted(async () => {
 })
 
 const cargando = computed(
-  () =>
-    consultaStore.cargando ||
-    mascotaStore.cargando ||
-    veterinarioStore.cargando,
+  () => consultaStore.cargando || mascotaStore.cargando || veterinarioStore.cargando,
 )
 
 // Aquí asumimos que consultaStore.consultas es el array crudo de la API
 const consultas = computed<ConsultaApi[]>(() => consultaStore.consultas as unknown as ConsultaApi[])
 const mascotas = computed<Mascota[]>(() => mascotaStore.mascotas)
-const veterinarios = computed<VeterinarioPerfil[]>(
-  () => veterinarioStore.veterinarios,
-)
+const veterinarios = computed<VeterinarioPerfil[]>(() => veterinarioStore.veterinarios)
 
-// Turnos que ya tienen una consulta vinculada (para no repetirlos)
+// Excluir turnos de otras consultas; la consulta editada conserva su propio turno.
 const turnosUsados = computed<Set<number>>(() => {
   const ids = new Set<number>()
   for (const c of consultas.value) {
-    if (c.turno) ids.add(c.turno)
+    if (c.id !== consultaEditando.value?.id && c.turno) ids.add(c.turno)
   }
   return ids
 })
 
-// Turnos de la mascota elegida que todavia no tienen consulta
+// Permitir el turno actual incluso si luego fue cancelado, sin ofrecer otros cancelados.
 const turnosMascota = computed<Turno[]>(() =>
   turnoStore.turnos.filter(
     (t) =>
       t.mascota_id === form.value.mascota &&
-      t.estado !== 'cancelado' &&
+      (t.estado !== 'cancelado' || t.id === consultaEditando.value?.turno) &&
       !turnosUsados.value.has(t.id),
   ),
 )
@@ -467,10 +425,8 @@ const consultasFiltradas = computed<ConsultaApi[]>(() => {
   return consultas.value
     .filter((c) => {
       if (!c.fecha) return false
-      const fechaStr = c.fecha.slice(0, 10)
-      const cumpleFecha =
-        (!desde || fechaStr >= desde) &&
-        (!hasta || fechaStr <= hasta)
+      const fechaStr = fechaParaFormulario(fechaDesdeAPI(c.fecha))
+      const cumpleFecha = (!desde || fechaStr >= desde) && (!hasta || fechaStr <= hasta)
 
       const texto = (
         (c.mascota_nombre ?? '') +
@@ -513,9 +469,7 @@ function formatearFecha(iso: string | null | undefined): string {
 }
 
 function obtenerModal(): Modal {
-  return Modal.getOrCreateInstance(
-    document.getElementById('modalConsulta') as HTMLElement,
-  )
+  return Modal.getOrCreateInstance(document.getElementById('modalConsulta') as HTMLElement)
 }
 
 function abrirModalNueva() {
@@ -524,8 +478,8 @@ function abrirModalNueva() {
   form.value = {
     mascota: form.value.mascota || 0,
     veterinario: undefined,
-    turno: undefined,
-    fecha: new Date().toISOString().slice(0, 10),
+    turno: 0,
+    fecha: fechaParaFormulario(),
     tipo: 'control',
     motivo_consulta: '',
     diagnostico: '',
@@ -546,21 +500,15 @@ function abrirModalEditar(c: ConsultaApi) {
   form.value = {
     mascota: c.mascota,
     veterinario: c.veterinario ?? undefined,
-    turno: c.turno ?? undefined,
-    fecha: c.fecha
-      ? c.fecha.slice(0, 10)
-      : new Date().toISOString().slice(0, 10),
+    turno: c.turno ?? 0,
+    fecha: c.fecha ? fechaParaFormulario(fechaDesdeAPI(c.fecha)) : fechaParaFormulario(),
     tipo: c.tipo as ConsultaClinicaForm['tipo'],
     motivo_consulta: c.motivo_consulta ?? '',
     diagnostico: c.diagnostico ?? '',
     tratamiento: c.tratamiento ?? '',
     observaciones: c.observaciones ?? '',
-    peso_actual: c.peso_actual
-      ? Number(c.peso_actual as unknown as string)
-      : undefined,
-    temperatura: c.temperatura
-      ? Number(c.temperatura as unknown as string)
-      : undefined,
+    peso_actual: c.peso_actual ? Number(c.peso_actual as unknown as string) : undefined,
+    temperatura: c.temperatura ? Number(c.temperatura as unknown as string) : undefined,
     frecuencia_cardiaca: c.frecuencia_cardiaca ?? undefined,
     frecuencia_respiratoria: c.frecuencia_respiratoria ?? undefined,
     proxima_visita: c.proxima_visita ?? undefined,
@@ -581,7 +529,7 @@ async function guardar() {
   const payload: ConsultaClinicaForm = {
     ...form.value,
     veterinario: form.value.veterinario || undefined,
-    turno: form.value.turno || undefined,
+    turno: form.value.turno || null,
   }
 
   try {
@@ -599,7 +547,9 @@ async function guardar() {
     obtenerModal().hide()
   } catch (e: unknown) {
     const data = (e as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar la consulta clínica.')
+    const msg = String(
+      data?.detail || data?.non_field_errors || 'No se pudo guardar la consulta clínica.',
+    )
     await Swal.fire('Error', msg, 'error')
     throw e
   } finally {

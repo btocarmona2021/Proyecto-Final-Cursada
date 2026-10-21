@@ -1,5 +1,8 @@
 from rest_framework import serializers
+from core.imagenes import ImagenValidada
 from django.contrib.auth.models import User, Group
+from django.db import transaction
+from rest_framework.validators import UniqueValidator
 from .models import PerfilUsuario, VeterinarioPerfil, HorarioVeterinario
 
 
@@ -18,6 +21,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
 # SERIALIZER PARA REGISTRO DE CLIENTE
 class ClienteRegistroSerializer(serializers.ModelSerializer):
+    foto = ImagenValidada(required=False, allow_null=True)
     password = serializers.CharField(write_only=True)
     telefono = serializers.CharField(required=False, allow_blank=True)
     direccion = serializers.CharField(required=False, allow_blank=True)
@@ -28,6 +32,7 @@ class ClienteRegistroSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "password",
+            "foto",
             "first_name",
             "last_name",
             "email",
@@ -36,9 +41,11 @@ class ClienteRegistroSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id"]
     
+    @transaction.atomic
     def create(self, validated_data):
         telefono = validated_data.pop('telefono', '')
         direccion = validated_data.pop('direccion', '')
+        foto = validated_data.pop('foto', None)
         password = validated_data.pop('password')
         
         user = User.objects.create_user(**validated_data)
@@ -51,6 +58,7 @@ class ClienteRegistroSerializer(serializers.ModelSerializer):
         PerfilUsuario.objects.create(
             usuario=user,
             telefono=telefono,
+            foto=foto,
             direccion=direccion
         )
         
@@ -59,8 +67,13 @@ class ClienteRegistroSerializer(serializers.ModelSerializer):
 
 # SERIALIZER PARA REGISTRO DE VETERINARIO
 class VeterinarioRegistroSerializer(serializers.ModelSerializer):
+    foto = ImagenValidada(required=False, allow_null=True)
     password = serializers.CharField(write_only=True)
-    matricula = serializers.CharField(required=True)
+    matricula = serializers.CharField(
+        required=True,
+        max_length=50,
+        validators=[UniqueValidator(queryset=VeterinarioPerfil.objects.all())],
+    )
     especialidad = serializers.CharField(required=False, allow_blank=True)
     biografia = serializers.CharField(required=False, allow_blank=True)
     
@@ -70,6 +83,7 @@ class VeterinarioRegistroSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "password",
+            "foto",
             "first_name",
             "last_name",
             "email",
@@ -79,10 +93,12 @@ class VeterinarioRegistroSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id"]
     
+    @transaction.atomic
     def create(self, validated_data):
         matricula = validated_data.pop('matricula')
         especialidad = validated_data.pop('especialidad', '')
         biografia = validated_data.pop('biografia', '')
+        foto = validated_data.pop('foto', None)
         password = validated_data.pop('password')
         
         user = User.objects.create_user(**validated_data)
@@ -96,6 +112,7 @@ class VeterinarioRegistroSerializer(serializers.ModelSerializer):
             usuario=user,
             matricula=matricula,
             especialidad=especialidad,
+            foto=foto,
             biografia=biografia
         )
         
@@ -104,6 +121,7 @@ class VeterinarioRegistroSerializer(serializers.ModelSerializer):
 
 # SERIALIZER PARA PERFIL USUARIO (edición)
 class PerfilUsuarioSerializer(serializers.ModelSerializer):
+    foto = ImagenValidada(required=False, allow_null=True)
     usuario = UsuarioSerializer(read_only=True)
     username = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
@@ -154,6 +172,7 @@ class PerfilUsuarioSerializer(serializers.ModelSerializer):
 
 # SERIALIZER PARA PERFIL DE VETERINARIO (edición)
 class VeterinarioPerfilSerializer(serializers.ModelSerializer):
+    foto = ImagenValidada(required=False, allow_null=True)
     usuario = UsuarioSerializer(read_only=True)
     
     class Meta:

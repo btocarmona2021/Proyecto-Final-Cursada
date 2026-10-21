@@ -6,7 +6,7 @@
     </div>
 
     <div class="d-flex gap-2 mb-3">
-      <button class="btn btn-success" @click="abrirModalNuevo">+ Nuevo servicio</button>
+      <button v-if="auth.esAdmin" class="btn btn-success" @click="abrirModalNuevo">+ Nuevo servicio</button>
       <input 
         type="text" 
         class="form-control form-control-sm ms-auto" 
@@ -50,10 +50,10 @@
               </td>
               <td>
                 <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditar(s)">
+                  <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-primary" @click="abrirModalEditar(s)">
                     Editar
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminar(s)">
+                  <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-danger" @click="confirmarEliminar(s)">
                     Eliminar
                   </button>
                 </div>
@@ -109,12 +109,14 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/authStore'
 import { ref, computed, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
 import { useServicioStore } from '@/stores/servicioStore'
 import type { Servicio } from '@/interfaces/servicioInterface'
 
+const auth = useAuthStore()
 const servicioStore = useServicioStore()
 
 const busqueda = ref('')

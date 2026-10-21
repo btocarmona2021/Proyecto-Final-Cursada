@@ -8,17 +8,15 @@
 
     <!-- Controles -->
     <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
-      <button class="btn btn-success" @click="abrirModalNuevo">
-        ➕ Nuevo turno
-      </button>
+      <button class="btn btn-success" @click="abrirModalNuevo">➕ Nuevo turno</button>
       <button class="btn btn-outline-secondary" @click="irHoy">Hoy</button>
       <button class="btn btn-outline-secondary" @click="cambiarMes(-1)">◀</button>
       <button class="btn btn-outline-secondary" @click="cambiarMes(1)">▶</button>
       <span class="fw-bold">{{ mesAnioLabel }}</span>
 
-      <input 
-        type="date" 
-        class="form-control form-control-sm ms-auto" 
+      <input
+        type="date"
+        class="form-control form-control-sm ms-auto"
         style="width: 180px"
         v-model="fechaSeleccionada"
       />
@@ -40,9 +38,7 @@
     <!-- Tabla de turnos -->
     <div class="card border-0 shadow-sm">
       <div class="card-body p-0">
-        <div v-if="turnoStore.cargando" class="text-center text-muted py-5">
-          Cargando turnos...
-        </div>
+        <div v-if="turnoStore.cargando" class="text-center text-muted py-5">Cargando turnos...</div>
         <div v-else-if="turnosFiltrados.length === 0" class="text-center text-muted py-5">
           No hay turnos para la fecha seleccionada
         </div>
@@ -67,8 +63,29 @@
               <td class="fw-bold text-success">{{ formatearHora(turno.hora_fin) }}</td>
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success-subtle text-success-emphasis rounded-circle" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px;">
-                    🐾
+                  <span
+                    class="badge bg-success-subtle text-success-emphasis rounded-circle"
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 14px;
+                    "
+                  >
+                    <img
+                      v-if="mascotaStore.mascotas.find((m) => m.id === turno.mascota_id)?.foto"
+                      :src="
+                        urlImagen(
+                          mascotaStore.mascotas.find((m) => m.id === turno.mascota_id)?.foto,
+                        )
+                      "
+                      alt=""
+                      class="rounded-circle"
+                      style="width: 28px; height: 28px; object-fit: cover"
+                    />
+                    <span v-else>🐾</span>
                   </span>
                   <span class="fw-semibold">{{ turno.mascota_nombre }}</span>
                 </div>
@@ -116,11 +133,7 @@
             <!-- Fecha y hora -->
             <div class="mb-3">
               <label class="form-label fw-semibold">Fecha y hora</label>
-              <input 
-                type="datetime-local" 
-                class="form-control" 
-                v-model="form.fecha_hora"
-              />
+              <input type="datetime-local" class="form-control" v-model="form.fecha_hora" />
             </div>
 
             <!-- Mascota -->
@@ -128,11 +141,7 @@
               <label class="form-label fw-semibold">Mascota</label>
               <select class="form-select" v-model="form.mascota">
                 <option :value="0">Seleccioná una mascota</option>
-                <option 
-                  v-for="m in mascotaStore.mascotas" 
-                  :key="m.id" 
-                  :value="m.id"
-                >
+                <option v-for="m in mascotaStore.mascotas" :key="m.id" :value="m.id">
                   {{ m.nombre }} ({{ m.especie_nombre }})
                 </option>
               </select>
@@ -143,11 +152,7 @@
               <label class="form-label fw-semibold">Veterinario</label>
               <select class="form-select" v-model="form.veterinario">
                 <option :value="0">Seleccioná un veterinario</option>
-                <option 
-                  v-for="v in veterinarioStore.veterinarios" 
-                  :key="v.id" 
-                  :value="v.id"
-                >
+                <option v-for="v in veterinarioStore.veterinarios" :key="v.id" :value="v.id">
                   {{ nombreCompletoVet(v) }}
                 </option>
               </select>
@@ -158,11 +163,7 @@
               <label class="form-label fw-semibold">Servicio</label>
               <select class="form-select" v-model="form.servicio">
                 <option :value="0">Seleccioná un servicio</option>
-                <option 
-                  v-for="s in servicioStore.servicios" 
-                  :key="s.id" 
-                  :value="s.id"
-                >
+                <option v-for="s in servicioStore.servicios" :key="s.id" :value="s.id">
                   {{ s.nombre }}
                 </option>
               </select>
@@ -184,9 +185,9 @@
             <!-- Motivo consulta -->
             <div class="mb-3">
               <label class="form-label fw-semibold">Motivo de consulta</label>
-              <textarea 
-                class="form-control" 
-                rows="2" 
+              <textarea
+                class="form-control"
+                rows="2"
                 v-model="form.motivo_consulta"
                 placeholder="Descripción del motivo de la consulta"
               ></textarea>
@@ -194,11 +195,7 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button 
-              class="btn btn-success" 
-              @click="guardar" 
-              :disabled="guardando"
-            >
+            <button class="btn btn-success" @click="guardar" :disabled="guardando">
               {{ guardando ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -209,6 +206,7 @@
 </template>
 
 <script setup lang="ts">
+import { urlImagen } from '@/utils/imagenes'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
@@ -276,9 +274,10 @@ const mesAnioLabel = computed(() => {
   const year = parseInt(yearStr || '0')
   const month = parseInt(monthStr || '0')
   const day = parseInt(dayStr || '0')
-  
+
   const d = new Date(year, month - 1, day)
-  return d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  return d
+    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
     .replace(/^\w/, (c) => c.toUpperCase())
 })
 
@@ -299,13 +298,13 @@ function cambiarMes(n: number) {
   const year = parseInt(yearStr || '0')
   const month = parseInt(monthStr || '0')
   const day = parseInt(dayStr || '0')
-  
+
   const d = new Date(year, month - 1 + n, day)
-  
+
   const newYear = d.getFullYear()
   const newMonth = String(d.getMonth() + 1).padStart(2, '0')
   const newDay = String(d.getDate()).padStart(2, '0')
-  
+
   fechaSeleccionada.value = `${newYear}-${newMonth}-${newDay}`
 }
 
@@ -373,7 +372,7 @@ function abrirModalEditar(turno: Turno) {
 
 async function guardar() {
   if (guardando.value) return
-  
+
   const mascota = Number(form.value.mascota)
   const veterinario = Number(form.value.veterinario)
   const servicio = Number(form.value.servicio)
@@ -397,17 +396,16 @@ async function guardar() {
     } else {
       await turnoStore.crear(payload)
     }
-    
+
     await turnoStore.obtenerTodos()
     obtenerModal().hide()
-    
+
     Swal.fire({
       icon: 'success',
       title: modoEdicion.value ? 'Turno actualizado' : 'Turno creado',
       timer: 1500,
       showConfirmButton: false,
     })
-    
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
     const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar el turno.')

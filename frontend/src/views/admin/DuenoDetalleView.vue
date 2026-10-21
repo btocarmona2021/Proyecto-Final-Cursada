@@ -6,12 +6,15 @@
         <li class="breadcrumb-item">
           <RouterLink to="/admin/duenos">Dueños</RouterLink>
         </li>
-        <li class="breadcrumb-item active">{{ dueno?.first_name ?? 'Cargando...' }} {{ dueno?.last_name ?? '' }}</li>
+        <li class="breadcrumb-item active">
+          {{ dueno?.first_name ?? 'Cargando...' }} {{ dueno?.last_name ?? '' }}
+        </li>
       </ol>
     </nav>
 
     <div v-if="cargando" class="text-center text-muted py-5">Cargando...</div>
 
+    <div v-else-if="errorCarga" class="alert alert-danger">{{ errorCarga }}</div>
     <div v-else-if="!dueno" class="text-center text-muted py-5">Dueño no encontrado</div>
 
     <div v-else>
@@ -20,9 +23,22 @@
         <div class="card-body d-flex align-items-center gap-3">
           <div
             class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-            style="width:80px;height:80px;background:#d1e7dd;color:#146c43;font-size:1.8rem"
+            style="
+              width: 80px;
+              height: 80px;
+              background: #d1e7dd;
+              color: #146c43;
+              font-size: 1.8rem;
+            "
           >
-            {{ iniciales }}
+            <img
+              v-if="perfil?.foto"
+              :src="urlImagen(perfil.foto)"
+              :alt="`Foto de ${dueno.first_name} ${dueno.last_name}`"
+              class="rounded-circle"
+              style="width: 100%; height: 100%; object-fit: cover"
+            />
+            <span v-else>{{ iniciales }}</span>
           </div>
           <div class="flex-grow-1">
             <h4 class="fw-bold mb-1">{{ dueno.first_name }} {{ dueno.last_name }}</h4>
@@ -72,7 +88,15 @@
                 </thead>
                 <tbody>
                   <tr v-for="m in mascotasDueno" :key="m.id">
-                    <td class="fw-semibold">{{ m.nombre }}</td>
+                    <td class="fw-semibold">
+                      <img
+                        v-if="m.foto"
+                        :src="urlImagen(m.foto)"
+                        alt=""
+                        class="rounded-circle me-2"
+                        style="width: 36px; height: 36px; object-fit: cover"
+                      />{{ m.nombre }}
+                    </td>
                     <td>{{ m.especie_nombre }}</td>
                     <td class="text-muted small">{{ m.raza_nombre }}</td>
                     <td>
@@ -83,7 +107,10 @@
                     <td class="small">{{ m.edad_anos ? `${m.edad_anos} años` : '—' }}</td>
                     <td class="small">{{ m.peso_actual ? `${m.peso_actual} kg` : '—' }}</td>
                     <td>
-                      <RouterLink :to="`/admin/pacientes/${m.id}`" class="btn btn-sm btn-outline-secondary">
+                      <RouterLink
+                        :to="`/admin/pacientes/${m.id}`"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
                         Ver ficha
                       </RouterLink>
                     </td>
@@ -190,7 +217,9 @@
                   <tr v-for="c in consultasDueno.slice(0, 10)" :key="c.id">
                     <td class="small">{{ formatearFecha(c.fecha) }}</td>
                     <td class="small">{{ obtenerMascotaNombre(c.mascota) }}</td>
-                    <td><span class="badge bg-secondary">{{ c.tipo_display }}</span></td>
+                    <td>
+                      <span class="badge bg-secondary">{{ c.tipo_display }}</span>
+                    </td>
                     <td class="small">{{ c.veterinario_nombre ?? '—' }}</td>
                     <td class="small">{{ c.diagnostico ?? '—' }}</td>
                   </tr>
@@ -205,70 +234,69 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { urlImagen } from '@/utils/imagenes'
 import { useRoute } from 'vue-router'
-import { useUsuarioStore } from '@/stores/usuarioStore'
 import { usePerfilClienteStore } from '@/stores/perfilClienteStore'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useTurnoStore } from '@/stores/turnoStore'
 import { useConsultaStore } from '@/stores/consultaStore'
 import type { EstadoTurno } from '@/interfaces/turnoInterface'
-import type { UsuarioAuth } from '@/interfaces/usuarioInterface'
 import type { ConsultaClinica } from '@/interfaces/consultaClinicaInterface'
 
 const route = useRoute()
-const usuarioStore = useUsuarioStore()
 const perfilClienteStore = usePerfilClienteStore()
 const mascotaStore = useMascotaStore()
 const turnoStore = useTurnoStore()
 const consultaStore = useConsultaStore()
+const errorCarga = ref('')
 
 const idDueno = computed(() => Number(route.params.id))
 
-const dueno = computed(() =>
-  usuarioStore.usuarios.find((u: UsuarioAuth) => u.id === idDueno.value) ?? null
+const dueno = computed(
+  () => perfilClienteStore.perfiles.find((p) => p.usuario.id === idDueno.value)?.usuario ?? null,
 )
 
-const perfil = computed(() =>
-  perfilClienteStore.perfiles.find((p) => p.usuario.id === idDueno.value) ?? null
+const perfil = computed(
+  () => perfilClienteStore.perfiles.find((p) => p.usuario.id === idDueno.value) ?? null,
 )
 
 const mascotasDueno = computed(() =>
-  mascotaStore.mascotas.filter((m) => m.usuario === idDueno.value)
+  mascotaStore.mascotas.filter((m) => m.usuario === idDueno.value),
 )
 
 const idsMascotas = computed(() => mascotasDueno.value.map((m) => m.id))
 
 const turnosDueno = computed(() =>
-  turnoStore.turnos.filter((t) => idsMascotas.value.includes(t.mascota_id))
+  turnoStore.turnos.filter((t) => idsMascotas.value.includes(t.mascota_id)),
 )
 
 const turnosProximos = computed(() => {
-  const ahora = new Date().toISOString()
+  const ahora = Date.now()
   return turnosDueno.value
-    .filter((t) => t.fecha_hora >= ahora)
-    .sort((a, b) => a.fecha_hora.localeCompare(b.fecha_hora))
+    .filter((t) => new Date(t.fecha_hora).getTime() >= ahora)
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
 })
 
 const turnosPasados = computed(() => {
-  const ahora = new Date().toISOString()
+  const ahora = Date.now()
   return turnosDueno.value
-    .filter((t) => t.fecha_hora < ahora)
-    .sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora))
+    .filter((t) => new Date(t.fecha_hora).getTime() < ahora)
+    .sort((a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())
 })
 
 const consultasDueno = computed(() =>
   consultaStore.consultas
     .filter((c: ConsultaClinica) => idsMascotas.value.includes(c.mascota))
-    .sort((a: ConsultaClinica, b: ConsultaClinica) => b.fecha.localeCompare(a.fecha))
+    .sort((a: ConsultaClinica, b: ConsultaClinica) => b.fecha.localeCompare(a.fecha)),
 )
 
-const cargando = computed(() =>
-  usuarioStore.cargando ||
-  perfilClienteStore.cargando ||
-  mascotaStore.cargando ||
-  turnoStore.cargando ||
-  consultaStore.cargando
+const cargando = computed(
+  () =>
+    perfilClienteStore.cargando ||
+    mascotaStore.cargando ||
+    turnoStore.cargando ||
+    consultaStore.cargando,
 )
 
 const iniciales = computed(() => {
@@ -279,13 +307,16 @@ const iniciales = computed(() => {
 })
 
 onMounted(async () => {
-  await Promise.all([
-    usuarioStore.obtenerTodos(),
-    perfilClienteStore.obtenerTodos(),
-    mascotaStore.obtenerTodos(),
-    turnoStore.obtenerTodos(),
-    consultaStore.obtenerTodos(),
-  ])
+  try {
+    await Promise.all([
+      perfilClienteStore.obtenerTodos(),
+      mascotaStore.obtenerTodos(),
+      turnoStore.obtenerTodos(),
+      consultaStore.obtenerTodos(),
+    ])
+  } catch {
+    errorCarga.value = 'No se pudo cargar la información del dueño. Intentá nuevamente.'
+  }
 })
 
 function formatearFecha(fecha: string) {

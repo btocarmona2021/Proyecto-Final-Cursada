@@ -5,7 +5,7 @@ export type TipoConsulta =
   | 'vacunacion'
   | 'cirugia'
   | 'urgencia'
-  | 'postoperatorio'
+  | 'post_operatorio'
   | 'desparasitacion'
   | 'otro'
 
@@ -37,7 +37,7 @@ export interface ConsultaClinica {
 export interface ConsultaClinicaForm {
   mascota: number
   veterinario?: number
-  turno?: number
+  turno?: number | null
   fecha?: string
   tipo?: TipoConsulta
   motivo_consulta?: string

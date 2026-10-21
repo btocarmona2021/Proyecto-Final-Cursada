@@ -26,7 +26,7 @@ const routes = [
   {
     path: '/admin',
     component: () => import('@/layouts/AdminLayout.vue'),
-    meta: { requiereAuth: true, roles: ['administradores', 'veterinarios'] },
+    meta: { requiereAuth: true, roles: ['administradores', 'superadmin', 'veterinarios'] },
     children: [
       { path: '', redirect: { name: 'Dashboard' } },
       {
@@ -93,6 +93,12 @@ const routes = [
         path: 'reportes',
         name: 'Reportes',
         component: () => import('@/views/admin/ReportesView.vue'),
+      },
+      {
+        path: 'clinica',
+        name: 'DatosClinica',
+        component: () => import('@/views/admin/DatosClinicaView.vue'),
+        meta: { roles: ['administradores', 'superadmin'] },
       },
     ],
   },
@@ -173,8 +179,10 @@ router.beforeEach((to) => {
   }
 
   const rolesPermitidos = to.meta.roles as string[] | undefined
-  if (rolesPermitidos && auth.grupo && !rolesPermitidos.includes(auth.grupo)) {
-    return auth.redireccionPorGrupo()
+  if (rolesPermitidos && !rolesPermitidos.includes(auth.grupo ?? '')) {
+    return ['clientes', 'veterinarios', 'administradores', 'superadmin'].includes(auth.grupo ?? '')
+      ? auth.redireccionPorGrupo()
+      : '/'
   }
 
   return true

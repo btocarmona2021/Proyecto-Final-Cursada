@@ -3,29 +3,18 @@
   <div class="container-fluid">
     <!-- Breadcrumb simple -->
     <div class="mb-2">
-      <RouterLink
-        :to="{ name: 'ClienteInicio' }"
-        class="small text-decoration-none text-muted"
-      >
+      <RouterLink :to="{ name: 'ClienteInicio' }" class="small text-decoration-none text-muted">
         ← Volver al inicio
       </RouterLink>
     </div>
 
     <!-- Estado de carga -->
-    <div
-      v-if="cargando"
-      class="text-center text-muted py-4"
-      style="font-size: 13px"
-    >
+    <div v-if="cargando" class="text-center text-muted py-4" style="font-size: 13px">
       Cargando información de internación...
     </div>
 
     <!-- No encontrada -->
-    <div
-      v-else-if="!internacion"
-      class="alert alert-secondary"
-      style="font-size: 13px"
-    >
+    <div v-else-if="!internacion" class="alert alert-secondary" style="font-size: 13px">
       No se encontró ninguna internación activa para tus mascotas.
     </div>
 
@@ -38,12 +27,17 @@
             class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
             style="width: 56px; height: 56px; background: #fde2e4"
           >
-            <span style="font-size: 2rem">🏥</span>
+            <img
+              v-if="fotoMascota"
+              :src="urlImagen(fotoMascota)"
+              :alt="internacion.mascota_nombre"
+              class="rounded-circle"
+              style="width: 100%; height: 100%; object-fit: cover"
+            />
+            <span v-else style="font-size: 2rem">🏥</span>
           </div>
           <div class="flex-grow-1">
-            <h4 class="fw-bold mb-1">
-              Internación de {{ internacion.mascota_nombre }}
-            </h4>
+            <h4 class="fw-bold mb-1">Internación de {{ internacion.mascota_nombre }}</h4>
             <div class="text-muted" style="font-size: 13px">
               Estado:
               <span
@@ -112,10 +106,7 @@
       </div>
 
       <!-- Observaciones simples -->
-      <div
-        v-if="internacion.observaciones"
-        class="card border-0 shadow-sm mb-3"
-      >
+      <div v-if="internacion.observaciones" class="card border-0 shadow-sm mb-3">
         <div class="card-body">
           <h6 class="fw-bold mb-2">Observaciones</h6>
           <p class="text-muted mb-0" style="font-size: 13px">
@@ -129,8 +120,8 @@
         <div class="card-body">
           <h6 class="fw-bold mb-2">Evolución durante la internación</h6>
           <p class="text-muted mb-1" style="font-size: 13px">
-            En esta sección, en futuras versiones, vas a poder ver las notas de evolución
-            que registra el equipo veterinario (controles, medicación, observaciones).
+            En esta sección, en futuras versiones, vas a poder ver las notas de evolución que
+            registra el equipo veterinario (controles, medicación, observaciones).
           </p>
           <p class="text-muted mb-0" style="font-size: 13px">
             Ante cualquier duda sobre el estado de tu mascota, contactá directamente a la clínica.
@@ -140,10 +131,7 @@
 
       <!-- CTA -->
       <div class="d-flex justify-content-end">
-        <RouterLink
-          :to="{ name: 'ClienteTurnos' }"
-          class="btn btn-outline-success"
-        >
+        <RouterLink :to="{ name: 'ClienteTurnos' }" class="btn btn-outline-success">
           Ver turnos de control
         </RouterLink>
       </div>
@@ -152,11 +140,17 @@
 </template>
 
 <script setup lang="ts">
+import { urlImagen } from '@/utils/imagenes'
+import { useMascotaStore } from '@/stores/mascotaStore'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useInternacionStore } from '@/stores/internacionStore'
 import type { Internacion } from '@/interfaces/internacionInterface'
 
+const mascotaStore = useMascotaStore()
+const fotoMascota = computed(
+  () => mascotaStore.mascotas.find((m) => m.id === internacion.value?.mascota)?.foto,
+)
 const route = useRoute()
 const internacionStore = useInternacionStore()
 
@@ -171,7 +165,7 @@ const idInternacion = computed(() => Number(route.params.id || 0))
 onMounted(async () => {
   cargando.value = true
   try {
-    await internacionStore.obtenerTodos()
+    await Promise.all([internacionStore.obtenerTodos(), mascotaStore.obtenerTodos()])
   } finally {
     cargando.value = false
   }
@@ -196,21 +190,14 @@ const internacion = computed<Internacion | undefined>(() => {
 
   // 2) Fallback: internación activa más reciente
   const activas = data.filter(
-    (i) =>
-      i.estado === 'internado' ||
-      i.estado === 'observacion' ||
-      i.activo,
+    (i) => i.estado === 'internado' || i.estado === 'observacion' || i.activo,
   )
 
   if (activas.length === 0) return undefined
 
   return activas
     .slice()
-    .sort(
-      (a, b) =>
-        new Date(b.fecha_ingreso).getTime() -
-        new Date(a.fecha_ingreso).getTime(),
-    )[0]
+    .sort((a, b) => new Date(b.fecha_ingreso).getTime() - new Date(a.fecha_ingreso).getTime())[0]
 })
 
 function formatearFecha(iso: string | null | undefined) {

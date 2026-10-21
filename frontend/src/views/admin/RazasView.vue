@@ -30,7 +30,7 @@
     <!-- TAB ESPECIES -->
     <div v-if="tabActiva === 'especies'">
       <div class="d-flex gap-2 mb-3">
-        <button class="btn btn-success" @click="abrirModalNuevaEspecie">+ Nueva especie</button>
+        <button v-if="auth.esAdmin" class="btn btn-success" @click="abrirModalNuevaEspecie">+ Nueva especie</button>
         <input 
           type="text" 
           class="form-control form-control-sm ms-auto" 
@@ -66,10 +66,10 @@
                 <td class="text-muted small">{{ contarRazas(e.id) }} raza(s)</td>
                 <td>
                   <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditarEspecie(e)">
+                    <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-primary" @click="abrirModalEditarEspecie(e)">
                       Editar
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminarEspecie(e)">
+                    <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-danger" @click="confirmarEliminarEspecie(e)">
                       Eliminar
                     </button>
                   </div>
@@ -84,7 +84,7 @@
     <!-- TAB RAZAS -->
     <div v-if="tabActiva === 'razas'">
       <div class="d-flex gap-2 mb-3">
-        <button class="btn btn-success" @click="abrirModalNuevaRaza">+ Nueva raza</button>
+        <button v-if="auth.esAdmin" class="btn btn-success" @click="abrirModalNuevaRaza">+ Nueva raza</button>
         <input 
           type="text" 
           class="form-control form-control-sm ms-auto" 
@@ -127,10 +127,10 @@
                 </td>
                 <td>
                   <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditarRaza(r)">
+                    <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-primary" @click="abrirModalEditarRaza(r)">
                       Editar
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminarRaza(r)">
+                    <button v-if="auth.esAdmin" class="btn btn-sm btn-outline-danger" @click="confirmarEliminarRaza(r)">
                       Eliminar
                     </button>
                   </div>
@@ -207,6 +207,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/authStore'
 import { ref, computed, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
@@ -215,6 +216,7 @@ import { useRazaStore } from '@/stores/razaStore'
 import type { Especie } from '@/interfaces/especieInterface'
 import type { Raza } from '@/interfaces/razaInterface'
 
+const auth = useAuthStore()
 const especieStore = useEspecieStore()
 const razaStore = useRazaStore()
 

@@ -17,6 +17,8 @@ api.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${authStore.tokenAcceso}`
   }
 
+  if (config.data instanceof FormData) config.headers.delete('Content-Type')
+
   return config
 })
 
@@ -29,6 +31,12 @@ api.interceptors.response.use(
     const original = error.config
 
     if (!error.response) {
+      return Promise.reject(error)
+    }
+
+    // Si falla el refresh, devolvemos el error para cerrar la sesión.
+    // No intentamos renovar la misma petición de renovación.
+    if (original.url === '/token/refresh/') {
       return Promise.reject(error)
     }
 
@@ -61,7 +69,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  },
+  }
 )
 
 export default api

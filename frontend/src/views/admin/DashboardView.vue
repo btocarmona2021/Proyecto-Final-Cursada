@@ -224,6 +224,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { fechaDesdeAPI, diasHastaFecha, fechaParaFormulario } from '@/utils/fechas'
 import { useTurnoStore } from '@/stores/turnoStore'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useVacunaStore } from '@/stores/vacunaStore'
@@ -254,17 +255,17 @@ const fechaHoy = computed(() =>
   }),
 )
 
-const hoy = new Date().toISOString().slice(0, 10)
+const hoy = fechaParaFormulario()
 
 const turnosHoy = computed(() =>
   turnoStore.turnos
-    .filter((t) => t.fecha_hora && t.fecha_hora.startsWith(hoy))
+    .filter((t) => t.fecha_hora && fechaParaFormulario(fechaDesdeAPI(t.fecha_hora)) === hoy)
     .sort((a, b) => a.fecha_hora.localeCompare(b.fecha_hora)),
 )
 
 const vacunasVencidas = computed(() =>
   vacunaStore.vacunas.filter(
-    (v) => v.fecha_proxima && new Date(v.fecha_proxima) < new Date(),
+    (v) => v.fecha_proxima && diasHastaFecha(v.fecha_proxima) < 0,
   ),
 )
 
@@ -292,7 +293,7 @@ function obtenerNombreMascota(mascotaId: number): string {
 }
 
 const formatearFecha = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-AR')
+  fechaDesdeAPI(iso).toLocaleDateString('es-AR')
 
 const formatearHora = (iso: string) =>
   new Date(iso).toLocaleTimeString('es-AR', {
@@ -300,12 +301,7 @@ const formatearHora = (iso: string) =>
     minute: '2-digit',
   })
 
-const dias_restantes = (iso: string) => {
-  const hoyDate = new Date()
-  const target = new Date(iso)
-  const diff = target.getTime() - hoyDate.getTime()
-  return Math.round(diff / (1000 * 60 * 60 * 24))
-}
+const dias_restantes = (iso: string) => diasHastaFecha(iso)
 
 const insigniaEstado = (estado: EstadoTurno) => {
   switch (estado) {

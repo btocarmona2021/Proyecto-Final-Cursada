@@ -7,9 +7,14 @@
 
     <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
       <button class="btn btn-success" @click="abrirModalNuevo">+ Nuevo paciente</button>
-      <input type="text" class="form-control form-control-sm ms-auto" style="max-width:260px"
-        placeholder="Buscar por nombre..." v-model="busqueda" />
-      <select class="form-select form-select-sm" style="width:160px" v-model="filtroEspecie">
+      <input
+        type="text"
+        class="form-control form-control-sm ms-auto"
+        style="max-width: 260px"
+        placeholder="Buscar por nombre..."
+        v-model="busqueda"
+      />
+      <select class="form-select form-select-sm" style="width: 160px" v-model="filtroEspecie">
         <option value="">Todas las especies</option>
         <option v-for="e in especieStore.especies" :key="e.id" :value="e.nombre">
           {{ e.nombre }}
@@ -17,7 +22,10 @@
       </select>
     </div>
 
-    <div v-if="mascotaStore.cargando" class="text-center text-muted py-5">Cargando pacientes...</div>
+    <div v-if="mascotaStore.cargando" class="text-center text-muted py-5">
+      Cargando pacientes...
+    </div>
+    <div v-else-if="errorCarga" class="alert alert-danger">{{ errorCarga }}</div>
     <div v-else-if="mascotasFiltradas.length === 0" class="text-center text-muted py-5">
       No se encontraron pacientes
     </div>
@@ -37,7 +45,15 @@
           </thead>
           <tbody>
             <tr v-for="m in mascotasFiltradas" :key="m.id">
-              <td class="fw-semibold">{{ m.nombre }}</td>
+              <td class="fw-semibold">
+                <img
+                  v-if="m.foto"
+                  :src="urlImagen(m.foto)"
+                  alt=""
+                  class="rounded-circle me-2"
+                  style="width: 36px; height: 36px; object-fit: cover"
+                />{{ m.nombre }}
+              </td>
               <td>
                 {{ m.especie_nombre }}
                 <span class="text-muted small">/ {{ m.raza_nombre }}</span>
@@ -51,11 +67,18 @@
               </td>
               <td>
                 <div class="d-flex gap-1">
-                  <RouterLink :to="`/admin/pacientes/${m.id}`" class="btn btn-sm btn-outline-secondary">
+                  <RouterLink
+                    :to="`/admin/pacientes/${m.id}`"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
                     Ver ficha
                   </RouterLink>
-                  <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditar(m)">Editar</button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminar(m)">Eliminar</button>
+                  <button class="btn btn-sm btn-outline-primary" @click="abrirModalEditar(m)">
+                    Editar
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" @click="confirmarEliminar(m)">
+                    Eliminar
+                  </button>
                 </div>
               </td>
             </tr>
@@ -73,6 +96,12 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
+            <ImagenSelector
+              v-model="form.foto"
+              :actual="mascotaEditando?.foto"
+              etiqueta="Foto de la mascota"
+              id="imagen-pacientes"
+            />
 
             <div class="mb-3">
               <label class="form-label fw-semibold">Nombre</label>
@@ -93,7 +122,11 @@
               <label class="form-label fw-semibold">Raza</label>
               <select class="form-select" v-model="form.raza" :disabled="especieSeleccionada === 0">
                 <option :value="0">
-                  {{ especieSeleccionada === 0 ? 'Primero seleccioná una especie' : 'Seleccioná una raza' }}
+                  {{
+                    especieSeleccionada === 0
+                      ? 'Primero seleccioná una especie'
+                      : 'Seleccioná una raza'
+                  }}
                 </option>
                 <option v-for="r in razasFiltradas" :key="r.id" :value="r.id">
                   {{ r.nombre }}
@@ -141,7 +174,6 @@
               <label class="form-label fw-semibold">Microchip</label>
               <input type="text" class="form-control" v-model="form.microchip" />
             </div>
-
           </div>
           <div class="modal-footer">
             <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -152,25 +184,29 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
+import ImagenSelector from '@/components/ImagenSelector.vue'
+import { urlImagen } from '@/utils/imagenes'
 import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useEspecieStore } from '@/stores/especieStore'
 import { useRazaStore } from '@/stores/razaStore'
-import { useUsuarioStore } from '@/stores/usuarioStore'
+import { usePerfilClienteStore } from '@/stores/perfilClienteStore'
 import type { Mascota, MascotaForm } from '@/interfaces/mascotaInterface'
-import type { UsuarioAuth } from '@/interfaces/usuarioInterface'
 
 const mascotaStore = useMascotaStore()
 const especieStore = useEspecieStore()
 const razaStore = useRazaStore()
-const usuarioStore = useUsuarioStore()
+const perfilClienteStore = usePerfilClienteStore()
+const route = useRoute()
+const router = useRouter()
+const errorCarga = ref('')
 
 const busqueda = ref('')
 const filtroEspecie = ref('')
@@ -194,22 +230,29 @@ const formularioVacio = (): MascotaForm => ({
 const form = ref<MascotaForm>(formularioVacio())
 
 onMounted(async () => {
-  await Promise.all([
-    mascotaStore.obtenerTodos(),
-    especieStore.obtenerTodos(),
-    razaStore.obtenerTodos(),
-    usuarioStore.obtenerTodos(),
-  ])
+  try {
+    await Promise.all([
+      mascotaStore.obtenerTodos(),
+      especieStore.obtenerTodos(),
+      razaStore.obtenerTodos(),
+      perfilClienteStore.obtenerTodos(),
+    ])
+    if (route.query.editar) {
+      const mascota = mascotaStore.mascotas.find((m) => m.id === Number(route.query.editar))
+      if (mascota) abrirModalEditar(mascota)
+      else errorCarga.value = 'No se encontró el paciente que querés editar.'
+      await router.replace({ name: 'Pacientes' })
+    }
+  } catch {
+    errorCarga.value = 'No se pudieron cargar los pacientes y sus dueños. Intentá nuevamente.'
+  }
 })
 
-const soloClientes = computed(() =>
-   
-  usuarioStore.usuarios.filter((u: UsuarioAuth) => u.grupo === 'clientes')
-)
+const soloClientes = computed(() => perfilClienteStore.perfiles.map((perfil) => perfil.usuario))
 
 const razasFiltradas = computed(() => {
   if (especieSeleccionada.value === 0) return []
-  
+
   return razaStore.razas.filter((r) => r.especie?.id === especieSeleccionada.value)
 })
 
@@ -218,7 +261,7 @@ const mascotasFiltradas = computed(() =>
     const coincideNombre = m.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
     const coincideEspecie = filtroEspecie.value ? m.especie_nombre === filtroEspecie.value : true
     return coincideNombre && coincideEspecie
-  })
+  }),
 )
 
 function cambiarEspecie() {
@@ -240,12 +283,12 @@ function abrirModalNuevo() {
 function abrirModalEditar(m: Mascota) {
   modoEdicion.value = true
   mascotaEditando.value = m
-  
+
   const razaActual = razaStore.razas.find((r) => r.id === m.raza)
   if (razaActual && razaActual.especie) {
     especieSeleccionada.value = razaActual.especie.id
   }
-  
+
   form.value = {
     nombre: m.nombre,
     raza: m.raza,
@@ -269,16 +312,32 @@ async function guardar() {
   try {
     if (modoEdicion.value && mascotaEditando.value) {
       await mascotaStore.actualizar(mascotaEditando.value.id, form.value)
-      Swal.fire({ icon: 'success', title: 'Paciente actualizado', timer: 1500, showConfirmButton: false })
+      Swal.fire({
+        icon: 'success',
+        title: 'Paciente actualizado',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     } else {
       await mascotaStore.crear(form.value)
-      Swal.fire({ icon: 'success', title: 'Paciente creado', timer: 1500, showConfirmButton: false })
+      Swal.fire({
+        icon: 'success',
+        title: 'Paciente creado',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     }
     await mascotaStore.obtenerTodos()
     obtenerModal().hide()
   } catch (error: unknown) {
     const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const msg = String(data?.nombre || data?.detail || data?.non_field_errors || 'No se pudo guardar el paciente.')
+    const msg = String(
+      data?.foto ||
+        data?.nombre ||
+        data?.detail ||
+        data?.non_field_errors ||
+        'No se pudo guardar el paciente.',
+    )
     Swal.fire('Error', msg, 'error')
   } finally {
     guardando.value = false
@@ -298,7 +357,12 @@ async function confirmarEliminar(m: Mascota) {
   if (result.isConfirmed) {
     await mascotaStore.eliminar(m.id)
     await mascotaStore.obtenerTodos()
-    Swal.fire({ icon: 'success', title: 'Paciente eliminado', timer: 1500, showConfirmButton: false })
+    Swal.fire({
+      icon: 'success',
+      title: 'Paciente eliminado',
+      timer: 1500,
+      showConfirmButton: false,
+    })
   }
 }
 </script>

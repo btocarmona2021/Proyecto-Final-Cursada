@@ -14,13 +14,3 @@ router.register(r'servicios', ServicioViewSet, basename='servicio')
 urlpatterns = [
     path('', include(router.urls)),
 ]
-
-# DefaultRouter genera automáticamente las rutas CRUD (GET, POST, PUT, DELETE)
-# para cada ViewSet registrado, evitando escribir las URLs manualmente.
-
-# Los endpoint que se generaron son:
-# - /api/turnos/ [GET, POST]
-# - /api/turnos/{id}/ [GET, PUT, PATCH, DELETE]
-# - /api/servicios/ [GET, POST]
-# - /api/servicios/{id}/ [GET, PUT, PATCH, DELETE]
-

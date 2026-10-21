@@ -2,12 +2,9 @@
 <template>
   <div class="d-flex flex-column min-vh-100">
     <!-- TOPBAR -->
-    <nav
-      class="navbar navbar-light bg-white border-bottom sticky-top px-3"
-      style="height:56px"
-    >
-      <span class="navbar-brand fw-bold text-success mb-0">
-        <span class="badge bg-success me-1">V</span> VetSystem
+    <nav class="navbar navbar-light bg-white border-bottom sticky-top px-3" style="height: 56px">
+      <span style="max-width: 30%" class="navbar-brand fw-bold text-success mb-0">
+        <MarcaClinica />
       </span>
       <div class="ms-auto d-flex align-items-center gap-2">
         <button
@@ -18,7 +15,7 @@
           <span
             v-if="cantidadNotif > 0"
             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-            style="font-size:9px"
+            style="font-size: 9px"
           >
             {{ cantidadNotif }}
           </span>
@@ -26,17 +23,15 @@
         <span class="small fw-semibold d-none d-sm-inline">
           Hola, <strong>{{ nombreUsuario }}</strong>
         </span>
-        <span class="badge bg-success">{{ iniciales }}</span>
-        <button class="btn btn-sm btn-outline-danger" @click="cerrarSesion">
-          Salir
-        </button>
+        <FotoSesion :alternativa="iniciales" />
+        <button class="btn btn-sm btn-outline-danger" @click="cerrarSesion">Salir</button>
       </div>
     </nav>
 
     <!-- CONTENIDO -->
     <main
       class="flex-grow-1 overflow-auto pb-5"
-      style="max-width:720px;margin:0 auto;width:100%;padding:20px"
+      style="max-width: 720px; margin: 0 auto; width: 100%; padding: 20px"
     >
       <RouterView />
     </main>
@@ -45,25 +40,20 @@
     <div
       v-if="mostrarNotif"
       class="position-fixed top-0 start-0 w-100 h-100"
-      style="z-index:1050"
+      style="z-index: 1050"
       @click.self="alternarNotificaciones"
     >
       <div
         class="position-fixed bg-white border rounded-4 shadow-lg p-0"
-        style="top:64px;right:16px;width:360px;max-width:calc(100vw - 32px);z-index:1060"
+        style="top: 64px; right: 16px; width: 360px; max-width: calc(100vw - 32px); z-index: 1060"
       >
-        <div
-          class="d-flex justify-content-between align-items-center p-3 border-bottom"
-        >
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
           <span class="fw-bold">Notificaciones</span>
-          <button
-            class="btn btn-sm btn-outline-secondary"
-            @click="alternarNotificaciones"
-          >
+          <button class="btn btn-sm btn-outline-secondary" @click="alternarNotificaciones">
             Cerrar
           </button>
         </div>
-        <div class="p-2" style="max-height:400px;overflow-y:auto">
+        <div class="p-2" style="max-height: 400px; overflow-y: auto">
           <div
             v-for="n in notificacionStore.notificaciones.slice(0, 10)"
             :key="n.id"
@@ -76,7 +66,7 @@
             <div class="small">
               {{ n.mensaje }}
             </div>
-            <div class="text-muted" style="font-size:11px">
+            <div class="text-muted" style="font-size: 11px">
               {{ formatearFecha(n.created_at) }}
             </div>
           </div>
@@ -91,30 +81,15 @@
     </div>
 
     <!-- BOTTOM NAV -->
-    <nav
-      class="navbar fixed-bottom bg-white border-top p-0"
-      style="z-index:1040"
-    >
+    <nav class="navbar fixed-bottom bg-white border-top p-0" style="z-index: 1040">
       <div class="d-flex w-100">
-        <RouterLink
-          class="bnav-item"
-          :to="{ name: 'ClienteInicio' }"
-          active-class="bnav-active"
-        >
+        <RouterLink class="bnav-item" :to="{ name: 'ClienteInicio' }" active-class="bnav-active">
           <span>🏠</span> Inicio
         </RouterLink>
-        <RouterLink
-          class="bnav-item"
-          :to="{ name: 'ClienteMascotas' }"
-          active-class="bnav-active"
-        >
+        <RouterLink class="bnav-item" :to="{ name: 'ClienteMascotas' }" active-class="bnav-active">
           <span>🐾</span> Mascotas
         </RouterLink>
-        <RouterLink
-          class="bnav-item"
-          :to="{ name: 'ClienteTurnos' }"
-          active-class="bnav-active"
-        >
+        <RouterLink class="bnav-item" :to="{ name: 'ClienteTurnos' }" active-class="bnav-active">
           <span>📅</span> Turnos
         </RouterLink>
         <RouterLink
@@ -130,6 +105,8 @@
 </template>
 
 <script setup lang="ts">
+import MarcaClinica from '@/components/MarcaClinica.vue'
+import FotoSesion from '@/components/FotoSesion.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useNotificacionStore } from '@/stores/notificacionStore'
