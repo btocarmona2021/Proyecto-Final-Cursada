@@ -34,9 +34,9 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Si falla el refresh, devolvemos el error para cerrar la sesión.
-    // No intentamos renovar la misma petición de renovación.
-    if (original.url === '/token/refresh/') {
+    // El login muestra sus errores en el formulario.
+    // El refresh fallido vuelve al método que pidió la renovación.
+    if (original.url === '/token/' || original.url === '/token/refresh/') {
       return Promise.reject(error)
     }
 

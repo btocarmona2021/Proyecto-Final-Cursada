@@ -1,6 +1,6 @@
 <!-- src/views/cliente/ReservarView.vue -->
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid reserva-cliente">
     <!-- Encabezado -->
     <div class="mb-3 d-flex justify-content-between align-items-center">
       <div>
@@ -45,175 +45,183 @@
       </div>
     </div>
 
-    <!-- Paso 1: Mascota -->
-    <div v-if="pasoActual === 1" class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="fw-bold mb-2">1. Seleccioná la mascota</h6>
-        <p class="text-muted mb-3" style="font-size: 13px">
-          Solo se muestran tus mascotas registradas en la clínica.
-        </p>
+    <div class="reserva-grid">
+      <div class="reserva-formulario">
+        <!-- Paso 1: Mascota -->
+        <div v-if="pasoActual === 1" class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="fw-bold mb-2">1. Seleccioná la mascota</h6>
+            <p class="text-muted mb-3" style="font-size: 13px">
+              Solo se muestran tus mascotas registradas en la clínica.
+            </p>
 
-        <div v-if="mascotas.length === 0" class="alert alert-secondary" style="font-size: 13px">
-          Todavía no tenés mascotas registradas.
-          <RouterLink :to="{ name: 'ClienteMascotas' }">Agregar mascota</RouterLink>.
+            <div v-if="mascotas.length === 0" class="alert alert-secondary" style="font-size: 13px">
+              Todavía no tenés mascotas registradas.
+              <RouterLink :to="{ name: 'ClienteMascotas' }">Agregar mascota</RouterLink>.
+            </div>
+
+            <div v-else class="row g-2">
+              <div v-for="m in mascotas" :key="m.id" class="col-12">
+                <button
+                  type="button"
+                  class="w-100 text-start btn btn-light d-flex align-items-center p-2 rounded-3 border"
+                  :class="
+                    form.mascota === m.id
+                      ? 'border-success bg-success bg-opacity-10'
+                      : 'border-light'
+                  "
+                  @click="seleccionarMascota(m.id)"
+                >
+                  <div
+                    class="rounded-circle d-flex align-items-center justify-content-center me-3"
+                    style="width: 44px; height: 44px; background: #e7f5ff"
+                  >
+                    <img
+                      v-if="m.foto"
+                      :src="urlImagen(m.foto)"
+                      :alt="m.nombre"
+                      class="rounded-circle"
+                      style="width: 100%; height: 100%; object-fit: cover"
+                    />
+                    <span v-else style="font-size: 1.4rem">
+                      {{ emojiAvatar(m.especie_nombre) }}
+                    </span>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold" style="font-size: 14px">
+                      {{ m.nombre }}
+                    </div>
+                    <div class="text-muted" style="font-size: 12px">
+                      {{ m.especie_nombre }} · {{ m.raza_nombre }}
+                    </div>
+                    <div v-if="m.peso_actual" class="text-muted" style="font-size: 12px">
+                      Peso: {{ m.peso_actual }} kg
+                    </div>
+                  </div>
+                  <div>
+                    <span
+                      v-if="form.mascota === m.id"
+                      class="badge bg-success"
+                      style="font-size: 11px"
+                    >
+                      Seleccionada
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div v-else class="row g-2">
-          <div v-for="m in mascotas" :key="m.id" class="col-12">
-            <button
-              type="button"
-              class="w-100 text-start btn btn-light d-flex align-items-center p-2 rounded-3 border"
-              :class="
-                form.mascota === m.id ? 'border-success bg-success bg-opacity-10' : 'border-light'
-              "
-              @click="seleccionarMascota(m.id)"
-            >
-              <div
-                class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                style="width: 44px; height: 44px; background: #e7f5ff"
-              >
+        <!-- Paso 2: Servicio / Motivo -->
+        <div v-if="pasoActual === 2" class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="fw-bold mb-2">2. Motivo de la consulta</h6>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size: 13px">Servicio</label>
+              <select v-model.number="form.servicio" class="form-select form-select-sm">
+                <option :value="0">Seleccioná un servicio</option>
+                <option v-for="s in serviciosActivos" :key="s.id" :value="s.id">
+                  {{ s.nombre }} – $ {{ s.precio }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size: 13px">
+                Motivo detallado (opcional)
+              </label>
+              <textarea
+                v-model="form.motivo_consulta"
+                class="form-control"
+                rows="1"
+                placeholder="Ej: Control anual, vacunación, consulta por cojeo..."
+              ></textarea>
+            </div>
+
+            <div class="form-text mb-0" style="font-size: 12px">
+              El valor final del turno puede variar según los procedimientos realizados durante la
+              consulta.
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 3: Veterinario + Fecha y hora -->
+        <div v-if="pasoActual === 3" class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="fw-bold mb-2">3. Elegí profesional y horario</h6>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size: 13px">Veterinario</label>
+              <div class="d-flex align-items-center gap-2">
+                <select v-model.number="form.veterinario" class="form-select form-select-sm">
+                  <option :value="0">Seleccioná un profesional</option>
+                  <option v-for="v in veterinarios" :key="v.id" :value="v.id">
+                    {{ nombreCompletoVet(v) }}
+                  </option>
+                </select>
                 <img
-                  v-if="m.foto"
-                  :src="urlImagen(m.foto)"
-                  :alt="m.nombre"
-                  class="rounded-circle"
-                  style="width: 100%; height: 100%; object-fit: cover"
+                  v-if="veterinarios.find((v) => v.id === form.veterinario)?.foto"
+                  :src="urlImagen(veterinarios.find((v) => v.id === form.veterinario)?.foto)"
+                  alt="Foto del veterinario seleccionado"
+                  class="rounded-circle flex-shrink-0"
+                  style="width: 36px; height: 36px; object-fit: cover"
                 />
-                <span v-else style="font-size: 1.4rem">
-                  {{ emojiAvatar(m.especie_nombre) }}
-                </span>
               </div>
-              <div class="flex-grow-1">
-                <div class="fw-bold" style="font-size: 14px">
-                  {{ m.nombre }}
-                </div>
-                <div class="text-muted" style="font-size: 12px">
-                  {{ m.especie_nombre }} · {{ m.raza_nombre }}
-                </div>
-                <div v-if="m.peso_actual" class="text-muted" style="font-size: 12px">
-                  Peso: {{ m.peso_actual }} kg
-                </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold" style="font-size: 13px">Fecha</label>
+                <input
+                  v-model="fechaSeleccionada"
+                  type="date"
+                  class="form-control form-control-sm"
+                  :min="entradaHoy"
+                />
               </div>
-              <div>
-                <span v-if="form.mascota === m.id" class="badge bg-success" style="font-size: 11px">
-                  Seleccionada
-                </span>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold" style="font-size: 13px">Hora</label>
+                <input
+                  v-model="horaSeleccionada"
+                  type="time"
+                  class="form-control form-control-sm"
+                />
               </div>
-            </button>
+            </div>
+
+            <p class="form-text mb-0">
+              Elegí una fecha y hora dentro del horario de atención del veterinario.
+            </p>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Paso 2: Servicio / Motivo -->
-    <div v-if="pasoActual === 2" class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="fw-bold mb-2">2. Motivo de la consulta</h6>
-        <p class="text-muted mb-3" style="font-size: 13px">
-          Elegí el servicio o motivo principal de la consulta.
-        </p>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 13px">Servicio</label>
-          <select v-model.number="form.servicio" class="form-select form-select-sm">
-            <option :value="0">Seleccioná un servicio</option>
-            <option v-for="s in serviciosActivos" :key="s.id" :value="s.id">
-              {{ s.nombre }} – $ {{ s.precio }}
-            </option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 13px">
-            Motivo detallado (opcional)
-          </label>
-          <textarea
-            v-model="form.motivo_consulta"
-            class="form-control"
-            rows="2"
-            placeholder="Ej: Control anual, vacunación, consulta por cojeo..."
-          ></textarea>
-        </div>
-
-        <div class="alert alert-info mb-0" style="font-size: 12px">
-          El valor final del turno puede variar según los procedimientos realizados durante la
-          consulta.
+      <!-- Resumen -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-2">Resumen del turno</h6>
+          <ul class="list-unstyled mb-0" style="font-size: 13px">
+            <li class="d-flex justify-content-between mb-1">
+              <span>Mascota</span>
+              <strong>{{ resumenMascota }}</strong>
+            </li>
+            <li class="d-flex justify-content-between mb-1">
+              <span>Servicio</span>
+              <strong>{{ resumenServicio }}</strong>
+            </li>
+            <li class="d-flex justify-content-between mb-1">
+              <span>Profesional</span>
+              <strong>{{ resumenVeterinario }}</strong>
+            </li>
+            <li class="d-flex justify-content-between mb-1">
+              <span>Fecha y hora</span>
+              <strong>{{ resumenFechaHora }}</strong>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
-
-    <!-- Paso 3: Veterinario + Fecha y hora -->
-    <div v-if="pasoActual === 3" class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="fw-bold mb-2">3. Elegí profesional y horario</h6>
-        <p class="text-muted mb-3" style="font-size: 13px">
-          Seleccioná el profesional y el horario para tu turno.
-        </p>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size: 13px">Veterinario</label>
-          <select v-model.number="form.veterinario" class="form-select form-select-sm">
-            <option :value="0">Seleccioná un profesional</option>
-            <option v-for="v in veterinarios" :key="v.id" :value="v.id">
-              {{ nombreCompletoVet(v) }}
-            </option>
-          </select>
-          <img
-            v-if="veterinarios.find((v) => v.id === form.veterinario)?.foto"
-            :src="urlImagen(veterinarios.find((v) => v.id === form.veterinario)?.foto)"
-            alt="Foto del veterinario seleccionado"
-            class="rounded-circle mt-2"
-            style="width: 48px; height: 48px; object-fit: cover"
-          />
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-12 col-sm-6">
-            <label class="form-label fw-semibold" style="font-size: 13px">Fecha</label>
-            <input
-              v-model="fechaSeleccionada"
-              type="date"
-              class="form-control form-control-sm"
-              :min="entradaHoy"
-            />
-          </div>
-          <div class="col-12 col-sm-6">
-            <label class="form-label fw-semibold" style="font-size: 13px">Hora</label>
-            <input v-model="horaSeleccionada" type="time" class="form-control form-control-sm" />
-          </div>
-        </div>
-
-        <div class="alert alert-secondary mb-0" style="font-size: 12px">
-          En una versión futura se limitarán los horarios según la disponibilidad del veterinario.
-        </div>
-      </div>
-    </div>
-
-    <!-- Resumen -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="fw-bold mb-2">Resumen del turno</h6>
-        <ul class="list-unstyled mb-0" style="font-size: 13px">
-          <li class="d-flex justify-content-between mb-1">
-            <span>Mascota</span>
-            <strong>{{ resumenMascota }}</strong>
-          </li>
-          <li class="d-flex justify-content-between mb-1">
-            <span>Servicio</span>
-            <strong>{{ resumenServicio }}</strong>
-          </li>
-          <li class="d-flex justify-content-between mb-1">
-            <span>Profesional</span>
-            <strong>{{ resumenVeterinario }}</strong>
-          </li>
-          <li class="d-flex justify-content-between mb-1">
-            <span>Fecha y hora</span>
-            <strong>{{ resumenFechaHora }}</strong>
-          </li>
-        </ul>
-      </div>
-    </div>
-
     <!-- Navegación de pasos -->
     <div class="d-flex justify-content-between mt-3">
       <button
@@ -251,6 +259,7 @@
 import { urlImagen } from '@/utils/imagenes'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 import { useTurnoStore } from '@/stores/turnoStore'
 import { useMascotaStore } from '@/stores/mascotaStore'
 import { useServicioStore } from '@/stores/servicioStore'
@@ -399,6 +408,18 @@ async function confirmarTurno() {
     await turnoStore.crear(datos)
     await turnoStore.obtenerTodos()
     router.push({ name: 'ClienteTurnos' })
+  } catch (error: unknown) {
+    const datosError = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const mensaje = String(
+      datosError?.fecha_hora ||
+        datosError?.mascota ||
+        datosError?.veterinario ||
+        datosError?.servicio ||
+        datosError?.detail ||
+        datosError?.non_field_errors ||
+        'No se pudo reservar el turno. Revisá la conexión e intentá nuevamente.',
+    )
+    await Swal.fire('No se pudo reservar', mensaje, 'error')
   } finally {
     guardando.value = false
   }
@@ -421,6 +442,35 @@ function nombreCompletoVet(v: VeterinarioPerfil): string {
 </script>
 
 <style scoped>
+.reserva-grid {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+.reserva-formulario {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .reserva-grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .reserva-cliente > .mb-3 {
+    margin-bottom: 10px !important;
+  }
+  .reserva-grid .card {
+    margin-bottom: 0 !important;
+  }
+  .reserva-formulario .card-body {
+    padding: 12px;
+  }
+  .reserva-formulario .card-body .mb-3 {
+    margin-bottom: 8px !important;
+  }
+  .reserva-formulario .form-label {
+    margin-bottom: 4px;
+  }
+}
+
 .step-dot {
   width: 22px;
   height: 22px;

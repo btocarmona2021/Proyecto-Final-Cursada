@@ -373,6 +373,12 @@ onMounted(async () => {
     abrirModalNueva()
     form.value.mascota = Number(mascotaParam)
     form.value.turno = turnoParam ? Number(turnoParam) : undefined
+    const turno = turnoStore.turnos.find(
+      (t) => t.id === form.value.turno && t.mascota_id === form.value.mascota,
+    )
+    if (turno) {
+      form.value.veterinario = turno.veterinario_id
+    }
   }
 })
 

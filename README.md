@@ -82,6 +82,26 @@ docker compose --env-file .env --env-file .env.user exec backendveterinaria pyth
 
 Esta operación elimina también los demás administradores, clientes, mascotas, turnos, historias clínicas, catálogos y datos de la clínica. Conserva la cuenta indicada, su contraseña y sus grupos, además de la estructura de la base y los permisos internos de Django. Limpia sesiones, registros de tokens y el historial del panel de administración. No elimina archivos del directorio `media`. Sin `--confirmar`, o si la cuenta indicada no es un administrador activo, no se ejecuta la eliminación. La operación se realiza en una transacción.
 
+### Reiniciar desde una base de datos vacía
+
+Desde la carpeta del proyecto, detener los servicios y eliminar el volumen de PostgreSQL:
+
+```bash
+docker compose --env-file .env --env-file .env.user down --volumes
+```
+
+**Este comando elimina toda la base de datos, incluido el administrador.** No conserva ninguna cuenta. Los archivos del proyecto, la configuración local y las imágenes guardadas en `media` permanecen.
+
+Para volver a levantar el sistema desde cero, ejecutar en este orden:
+
+```bash
+bash setup.sh
+docker compose --env-file .env --env-file .env.user exec backendveterinaria python manage.py migrate
+docker compose --env-file .env --env-file .env.user exec backendveterinaria python manage.py createsuperuser
+```
+
+Después, ingresar con el administrador creado y cargar los datos desde la aplicación. La carga automática de demostración es opcional.
+
 ## Tecnologias usadas
 
 - Backend: Django + Django REST Framework + Simple JWT

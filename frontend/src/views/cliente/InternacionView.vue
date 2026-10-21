@@ -1,6 +1,6 @@
 <!-- src/views/cliente/InternacionView.vue -->
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid internacion-cliente">
     <!-- Breadcrumb simple -->
     <div class="mb-2">
       <RouterLink :to="{ name: 'ClienteInicio' }" class="small text-decoration-none text-muted">
@@ -78,6 +78,12 @@
                   </strong>
                 </li>
               </ul>
+              <div v-if="internacion.observaciones" class="mt-2">
+                <h6 class="fw-bold mb-1">Observaciones</h6>
+                <p class="text-muted mb-0" style="font-size: 13px">
+                  {{ internacion.observaciones }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -105,20 +111,10 @@
         </div>
       </div>
 
-      <!-- Observaciones simples -->
-      <div v-if="internacion.observaciones" class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-          <h6 class="fw-bold mb-2">Observaciones</h6>
-          <p class="text-muted mb-0" style="font-size: 13px">
-            {{ internacion.observaciones }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Evoluciones (placeholder simple) -->
-      <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-          <h6 class="fw-bold mb-2">Evolución durante la internación</h6>
+      <!-- Información sobre el seguimiento -->
+      <details class="card border-0 shadow-sm mb-3">
+        <summary class="fw-bold p-2">Evolución durante la internación</summary>
+        <div class="card-body pt-0">
           <p class="text-muted mb-1" style="font-size: 13px">
             En esta sección, en futuras versiones, vas a poder ver las notas de evolución que
             registra el equipo veterinario (controles, medicación, observaciones).
@@ -127,7 +123,7 @@
             Ante cualquier duda sobre el estado de tu mascota, contactá directamente a la clínica.
           </p>
         </div>
-      </div>
+      </details>
 
       <!-- CTA -->
       <div class="d-flex justify-content-end">
@@ -223,3 +219,32 @@ function insigniaInternacion(estado: string) {
   }
 }
 </script>
+
+<style scoped>
+.internacion-cliente {
+  padding: 0;
+}
+
+.internacion-cliente .card-body {
+  padding: 12px;
+}
+
+.internacion-cliente .mb-3 {
+  margin-bottom: 12px !important;
+}
+
+.internacion-cliente h4 {
+  font-size: 20px;
+}
+
+.internacion-cliente .row {
+  --bs-gutter-y: 12px;
+  --bs-gutter-x: 12px;
+}
+
+@media (min-width: 768px) {
+  .internacion-cliente .card-body > p {
+    margin-bottom: 4px;
+  }
+}
+</style>

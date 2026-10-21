@@ -11,7 +11,7 @@
             width="42"
             height="42"
           />
-          <span>VetSystem<small>Clínica veterinaria</small></span>
+          <span>Patitas del Sur<small>Clínica veterinaria</small></span>
         </RouterLink>
         <nav class="home-nav" aria-label="Navegación principal">
           <a href="#servicios" class="section-link">Servicios</a>
@@ -54,10 +54,10 @@
           </div>
           <figure class="hero-art">
             <img
-              :src="`${base}mascotas.svg`"
-              alt="Ilustración de un perro y un gato juntos"
-              width="520"
-              height="440"
+              :src="`${base}veterinaria.png`"
+              alt="Veterinaria con un perro y un gato en la clínica Patitas del Sur"
+              width="1374"
+              height="1145"
               fetchpriority="high"
             />
             <figcaption>Una historia de cuidado, juntos.</figcaption>
@@ -459,6 +459,8 @@ onMounted(() => Promise.all([cargarServicios(), cargarClinica()]))
   width: 100%;
   height: auto;
   max-height: 400px;
+  object-fit: cover;
+  border-radius: 20px;
 }
 .hero-art figcaption {
   font-size: 13px;

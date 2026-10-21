@@ -16,6 +16,7 @@ import perfilClienteService from '@/services/perfilClienteService'
 import perfilVeterinarioService from '@/services/perfilVeterinarioService'
 import { urlImagen } from '@/utils/imagenes'
 defineProps<{ alternativa: string }>()
+const emit = defineEmits<{ nombreCargado: [nombre: string] }>()
 const auth = useAuthStore()
 const foto = ref<string | null>(null)
 const falloImagen = ref(false)
@@ -28,6 +29,7 @@ watch(
     })
     foto.value = null
     falloImagen.value = false
+    emit('nombreCargado', 'Cliente')
     if (!auth.tokenAcceso || (!auth.esCliente && !auth.esVeterinario)) return
     try {
       // El identificador solo elige el avatar; los permisos los controla el backend.
@@ -38,7 +40,11 @@ watch(
       const perfiles = auth.esCliente
         ? await perfilClienteService.obtenerTodos()
         : await perfilVeterinarioService.obtenerTodos()
-      if (vigente) foto.value = perfiles.find((p) => p.usuario.id === id)?.foto ?? null
+      if (vigente) {
+        const perfil = perfiles.find((p) => p.usuario.id === id)
+        foto.value = perfil?.foto ?? null
+        emit('nombreCargado', perfil?.usuario.first_name || perfil?.usuario.username || 'Cliente')
+      }
     } catch {
       /* Si no se puede consultar la foto, se conservan las iniciales. */
     }

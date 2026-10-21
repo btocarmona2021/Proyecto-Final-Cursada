@@ -1,8 +1,11 @@
 <!-- src/layouts/ClienteLayout.vue -->
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="cliente-layout d-flex flex-column">
     <!-- TOPBAR -->
-    <nav class="navbar navbar-light bg-white border-bottom sticky-top px-3" style="height: 56px">
+    <nav
+      class="navbar navbar-light bg-white border-bottom flex-shrink-0 px-3"
+      style="min-height: 56px"
+    >
       <span style="max-width: 30%" class="navbar-brand fw-bold text-success mb-0">
         <MarcaClinica />
       </span>
@@ -23,16 +26,13 @@
         <span class="small fw-semibold d-none d-sm-inline">
           Hola, <strong>{{ nombreUsuario }}</strong>
         </span>
-        <FotoSesion :alternativa="iniciales" />
+        <FotoSesion :alternativa="iniciales" @nombre-cargado="nombreUsuario = $event" />
         <button class="btn btn-sm btn-outline-danger" @click="cerrarSesion">Salir</button>
       </div>
     </nav>
 
     <!-- CONTENIDO -->
-    <main
-      class="flex-grow-1 overflow-auto pb-5"
-      style="max-width: 720px; margin: 0 auto; width: 100%; padding: 20px"
-    >
+    <main class="cliente-contenido flex-grow-1 overflow-auto">
       <RouterView />
     </main>
 
@@ -81,7 +81,7 @@
     </div>
 
     <!-- BOTTOM NAV -->
-    <nav class="navbar fixed-bottom bg-white border-top p-0" style="z-index: 1040">
+    <nav class="navbar bg-white border-top p-0 flex-shrink-0">
       <div class="d-flex w-100">
         <RouterLink class="bnav-item" :to="{ name: 'ClienteInicio' }" active-class="bnav-active">
           <span>🏠</span> Inicio
@@ -117,7 +117,7 @@ const notificacionStore = useNotificacionStore()
 const mostrarNotif = ref(false)
 
 const cantidadNotif = computed(() => notificacionStore.noLeidas)
-const nombreUsuario = computed(() => 'Cliente')
+const nombreUsuario = ref('Cliente')
 const iniciales = computed(() => 'CL')
 
 onMounted(() => {
@@ -153,6 +153,18 @@ function formatearFecha(fecha: string) {
 </script>
 
 <style scoped>
+.cliente-layout {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+.cliente-contenido {
+  min-height: 0;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
 .bnav-item {
   flex: 1;
   display: flex;

@@ -1,6 +1,6 @@
 <!-- src/views/cliente/MascotaDetalleView.vue -->
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid ficha-mascota">
     <!-- Breadcrumb simple -->
     <div class="mb-2">
       <RouterLink :to="{ name: 'ClienteMascotas' }" class="small text-decoration-none text-muted">
@@ -21,7 +21,7 @@
     <!-- Detalle -->
     <div v-else>
       <!-- Header -->
-      <div class="card border-0 shadow-sm mb-3">
+      <div class="card border-0 shadow-sm mb-2 ficha-cabecera">
         <div class="card-body d-flex align-items-center gap-3">
           <div
             class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
@@ -42,9 +42,6 @@
             <h4 class="fw-bold mb-1">{{ mascota.nombre }}</h4>
             <div class="text-muted" style="font-size: 13px">
               {{ mascota.especie_nombre }} · {{ mascota.raza_nombre }}
-            </div>
-            <div class="text-muted" style="font-size: 12px">
-              Sexo:
               <span
                 class="badge"
                 :class="mascota.sexo === 'M' ? 'bg-primary' : 'bg-danger'"
@@ -54,11 +51,41 @@
               </span>
             </div>
           </div>
+          <RouterLink :to="{ name: 'ClienteReservar' }" class="btn btn-success btn-sm">
+            Reservar turno
+          </RouterLink>
         </div>
       </div>
 
+      <div class="nav nav-tabs mb-2" aria-label="Secciones de la ficha">
+        <button
+          type="button"
+          class="nav-link"
+          :class="{ active: tabActiva === 'datos' }"
+          @click="tabActiva = 'datos'"
+        >
+          Datos y turnos
+        </button>
+        <button
+          type="button"
+          class="nav-link"
+          :class="{ active: tabActiva === 'vacunas' }"
+          @click="tabActiva = 'vacunas'"
+        >
+          Vacunas
+        </button>
+        <button
+          type="button"
+          class="nav-link"
+          :class="{ active: tabActiva === 'consultas' }"
+          @click="tabActiva = 'consultas'"
+        >
+          Consultas y recetas
+        </button>
+      </div>
+
       <!-- Datos básicos -->
-      <div class="row g-3 mb-3">
+      <div v-if="tabActiva === 'datos'" class="row g-3">
         <div class="col-12 col-md-4">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
@@ -117,8 +144,8 @@
       </div>
 
       <!-- Historial clínico -->
-      <div class="row g-3 mb-3">
-        <div class="col-12 col-md-6">
+      <div v-if="tabActiva !== 'datos'" class="row g-3">
+        <div v-if="tabActiva === 'vacunas'" class="col-12">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <h6 class="fw-bold mb-2">Vacunas</h6>
@@ -142,29 +169,32 @@
           </div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <div class="card border-0 shadow-sm h-100">
+        <div v-if="tabActiva === 'consultas'" class="col-12 ficha-consultas">
+          <div class="card border-0 shadow-sm">
             <div class="card-body">
-              <h6 class="fw-bold mb-2">Consultas</h6>
               <div v-if="consultasMascota.length === 0" class="text-muted" style="font-size: 13px">
                 Sin consultas registradas.
               </div>
               <ul v-else class="list-group list-group-flush" style="font-size: 13px">
-                <li v-for="c in consultasMascota" :key="c.id" class="list-group-item px-0">
+                <li
+                  v-for="c in consultasMascota"
+                  :key="c.id"
+                  class="list-group-item px-0 consulta-item"
+                >
                   <div class="d-flex justify-content-between">
                     <span class="fw-semibold">{{ c.tipo_display }}</span>
                     <span class="text-muted">
                       {{ formatearFecha(c.fecha) }}
                     </span>
                   </div>
-                  <div v-if="c.diagnostico" class="text-muted">
+                  <div v-if="c.diagnostico" class="text-muted consulta-diagnostico">
                     {{ c.diagnostico }}
                   </div>
                   <details v-if="c.recetas?.length" class="mt-2">
                     <summary class="text-success">Ver receta ({{ c.recetas.length }})</summary>
                     <RecetaDetalle :items="c.recetas" class="mt-2" />
                   </details>
-                  <div v-if="c.veterinario_nombre" class="text-muted small">
+                  <div v-if="c.veterinario_nombre" class="text-muted small consulta-profesional">
                     Dr/a: {{ c.veterinario_nombre }}
                   </div>
                 </li>
@@ -172,13 +202,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="d-flex justify-content-end">
-        <RouterLink :to="{ name: 'ClienteReservar' }" class="btn btn-success">
-          Reservar turno para {{ mascota.nombre }}
-        </RouterLink>
       </div>
     </div>
   </div>
@@ -206,6 +229,7 @@ const consultaStore = useConsultaStore()
 const vacunaStore = useVacunaStore()
 
 const cargando = ref(false)
+const tabActiva = ref('datos')
 
 const idMascota = computed(() => Number(route.params.id || 0))
 
@@ -218,6 +242,9 @@ onMounted(async () => {
       consultaStore.obtenerTodos(),
       vacunaStore.obtenerTodos(),
     ])
+    if (consultaStore.consultas.some((c) => c.mascota === idMascota.value)) {
+      tabActiva.value = 'consultas'
+    }
   } finally {
     cargando.value = false
   }
@@ -294,3 +321,50 @@ function insigniaEstado(estado: string) {
   }
 }
 </script>
+
+<style scoped>
+.ficha-cabecera .card-body {
+  padding: 12px;
+  flex-wrap: wrap;
+}
+.ficha-cabecera .rounded-circle {
+  width: 48px !important;
+  height: 48px !important;
+}
+.ficha-mascota .nav-link {
+  padding: 6px 12px;
+}
+@media (min-width: 900px) {
+  .ficha-mascota .card-body {
+    padding: 12px;
+  }
+  .consulta-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 24px;
+    row-gap: 8px;
+    align-items: start;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .consulta-item > .d-flex {
+    grid-column: 1 / -1;
+  }
+  .consulta-diagnostico {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .consulta-profesional {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .consulta-item > details {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    margin-top: 0 !important;
+  }
+  .ficha-consultas :deep(.p-3) {
+    padding: 12px !important;
+  }
+}
+</style>

@@ -407,12 +407,16 @@ async function guardar() {
       showConfirmButton: false,
     })
   } catch (error: unknown) {
-    const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
-    const msg = String(data?.detail || data?.non_field_errors || 'No se pudo guardar el turno.')
+    const datosError = (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+    const mensaje = String(
+      datosError?.fecha_hora || datosError?.mascota || datosError?.veterinario ||
+      datosError?.servicio || datosError?.estado || datosError?.urgencia ||
+      datosError?.detail || datosError?.non_field_errors || 'No se pudo guardar el turno.',
+    )
     Swal.fire({
       icon: 'error',
       title: 'Error al guardar',
-      html: msg,
+      text: mensaje,
     })
   } finally {
     guardando.value = false
